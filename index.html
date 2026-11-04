@@ -42,7 +42,7 @@
   <button id="home">Recentrer la vue</button>
 </div>
 <div id="hint">Glisser pour tourner · molette ou pincer pour zoomer · clic droit ou deux doigts pour déplacer</div>
-<div id="credit">Terrain et volumes : IFC du projet · Voirie © contributeurs OpenStreetMap</div>
+<div id="credit">Terrain et bâtiments mitoyens : IFC du projet · Bâtiments, voirie et signalisation © contributeurs OpenStreetMap</div>
 <div id="load"><div>Chargement de la maquette…<i id="bar"></i></div></div>
 
 <script type="importmap">
@@ -63,7 +63,7 @@ const mobile = matchMedia('(max-width:640px), (pointer:coarse)').matches;
 const renderer = new THREE.WebGLRenderer({ canvas: $('c'), antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.25 : 1.5));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.85;
+renderer.toneMappingExposure = 0.78;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.shadowMap.autoUpdate = false;           // scène statique : l'ombre n'est calculée qu'au besoin
@@ -77,7 +77,7 @@ let dirty = 3, shadowDirty = true;
 const SUN_AZ = 248, SUN_EL = 30;                 // degrés ; azimut depuis le nord (-Z), vers l'est (+X)
 const az = THREE.MathUtils.degToRad(SUN_AZ), el = THREE.MathUtils.degToRad(SUN_EL);
 const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el));
-const HORIZON = new THREE.Color(0xe9eef3), ZENITH = new THREE.Color(0x5b8fd0);
+const HORIZON = new THREE.Color(0xf2f4f6), ZENITH = new THREE.Color(0x8fb3dc);
 scene.fog = new THREE.Fog(HORIZON, 180, 900);
 const dome = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), new THREE.ShaderMaterial({
   side: THREE.BackSide, depthWrite: false, fog: false,
@@ -99,7 +99,7 @@ dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome);
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(env, 0, 0.1, 200, { size: 128 }).texture;
   scene.environmentIntensity = 0.35;
 }
-scene.add(new THREE.HemisphereLight(0xdfe8f5, 0x6f6a5c, 0.6));
+scene.add(new THREE.HemisphereLight(0xeef2f8, 0xbdb8ae, 0.75));
 const sun = new THREE.DirectionalLight(0xffe2bf, 3.4);
 sun.castShadow = true;
 sun.shadow.mapSize.setScalar(mobile ? 2048 : 4096);
@@ -122,16 +122,16 @@ const blocks = (amp) => canvasTex((g, s) => {
     for (let x = (r % 2) * 40; x < s; x += 80) { g.fillStyle = `rgba(0,0,0,${amp})`; g.fillRect(x, r * h, 3, h); g.fillStyle = `rgba(0,0,0,${rnd() * 0.12})`; g.fillRect(x + 3, r * h + 3, 77, h - 3); } }
 });
 const LIB = {   // couleur, rugosité, métal, texture, taille du motif (m)
-  enduit_clair: { c: 0xeadfc6, r: 0.95, m: 0, t: () => noise(30, 2), s: 1.5 },
-  enduit_gris:  { c: 0x9d9fa2, r: 0.95, m: 0, t: () => noise(34, 2), s: 1.5 },
-  beton:        { c: 0xb2b2ae, r: 0.9,  m: 0, t: () => noise(60, 2), s: 1.2 },
+  enduit_clair: { c: 0xece4d2, r: 0.95, m: 0 },
+  enduit_gris:  { c: 0xa9abae, r: 0.95, m: 0 },
+  beton:        { c: 0xc4c3bf, r: 0.9,  m: 0 },
   platre:       { c: 0xf3f2ee, r: 0.95, m: 0 },
-  pierre:       { c: 0xb4a78f, r: 0.95, m: 0, t: () => blocks(0.35), s: 1.6 },
-  asphalte:     { c: 0x4a4d52, r: 0.95, m: 0, t: () => noise(70), s: 0.8 },
-  terre:        { c: 0x6f8752, r: 1,    m: 0, t: () => noise(90), s: 0.6 },
-  dalle:        { c: 0xa59f94, r: 0.9,  m: 0, t: () => grid(2, 0.28), s: 1.2 },
-  zinc:         { c: 0x858d94, r: 0.45, m: 0.2, t: () => lines(2, 0.4, 14), s: 1.0 },
-  gravier:      { c: 0x94918b, r: 1,    m: 0, t: () => noise(95), s: 0.5 },
+  pierre:       { c: 0xc2b69f, r: 0.95, m: 0, t: () => blocks(0.2), s: 1.6 },
+  asphalte:     { c: 0xb7bbc0, r: 0.95, m: 0 },
+  terre:        { c: 0xa9c094, r: 1,    m: 0 },
+  dalle:        { c: 0xd3cfc7, r: 0.9,  m: 0, t: () => grid(2, 0.14), s: 1.2 },
+  zinc:         { c: 0x8e969d, r: 0.45, m: 0.2, t: () => lines(2, 0.25, 0), s: 1.0 },
+  gravier:      { c: 0xc9c7c2, r: 1,    m: 0 },
   menuiserie:   { c: 0x5c6167, r: 0.5,  m: 0.15 },
   bois:         { c: 0xa8794d, r: 0.7,  m: 0, t: () => lines(10, 0.12, 40), s: 0.8 },
   metal:        { c: 0x666b71, r: 0.5,  m: 0.5 },
@@ -139,6 +139,7 @@ const LIB = {   // couleur, rugosité, métal, texture, taille du motif (m)
   verre:        { c: 0x6f93a8, r: 0.03, m: 0 },
 };
 const mats = new Map();
+const rampMat = new THREE.MeshStandardMaterial({ color: 0x6e737a, roughness: 0.9, flatShading: true });
 function makeMat(name) {
   if (mats.has(name)) return mats.get(name);
   const d = LIB[name] ?? LIB.divers;
@@ -178,6 +179,7 @@ bat.scene.traverse((o) => {
   if (cat === 'plafond') { o.visible = false; return; }
   const glass = o.material.name === 'verre';
   o.material = makeMat(o.material.name); o.castShadow = !glass; o.receiveShadow = true;
+  if ((o.userData.name || o.name) === 'SOUS SOL|escalier') o.material = rampMat;   // rampe du parking souterrain : enrobé sombre, bien lisible
 });
 scene.add(bat.scene);
 
@@ -185,6 +187,7 @@ scene.add(bat.scene);
 const { x0, z0, S } = env.sol;
 sol.colorSpace = THREE.SRGBColorSpace; sol.anisotropy = renderer.capabilities.getMaxAnisotropy(); sol.generateMipmaps = true;
 let terrain = null;
+const clayMat = new THREE.MeshStandardMaterial({ color: 0xf7f6f3, roughness: 0.95, envMapIntensity: 0.35, side: THREE.DoubleSide });
 ctx.scene.traverse((o) => {
   if (!o.isMesh) return;
   if (o.name === 'terrain') {
@@ -195,14 +198,14 @@ ctx.scene.traverse((o) => {
     o.receiveShadow = true; terrain = o;
   } else {
     o.geometry = o.geometry.toNonIndexed(); o.geometry.computeVertexNormals();
-    o.material = new THREE.MeshStandardMaterial({ color: 0xf4f2ee, roughness: 0.92, envMapIntensity: 0.4, side: THREE.DoubleSide });   // relevé IFC : orientation des faces non homogène
+    o.material = clayMat;   // volumes IFC proches et volumes OSM : même blanc mat ; double face car l'orientation des faces n'est pas homogène
     o.castShadow = o.receiveShadow = true;
   }
 });
 ctx.scene.updateMatrixWorld(true);
 scene.add(ctx.scene);
 // au-delà du relevé : un grand sol herbeux qui se fond dans la brume
-const far = new THREE.Mesh(new THREE.CircleGeometry(1400, 48).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x6f8556, roughness: 1 }));
+const far = new THREE.Mesh(new THREE.CircleGeometry(1400, 48).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xf1f0ec, roughness: 1 }));
 far.position.y = env.edgeY - 1.2; far.receiveShadow = false; scene.add(far);
 
 /* ---------- cadrage ---------- */
@@ -239,6 +242,34 @@ const vegetation = new THREE.Group(); scene.add(vegetation);
   mk(T, 0x8a7a66); mk(C, 0x7fa65f);
 }
 $('veg').onchange = (e) => { vegetation.visible = e.target.checked; shadowDirty = true; dirty = 2; };
+
+/* ---------- signalisation (OSM) : feux, stops, cédez-le-passage, arrêts de bus, lampadaires ---------- */
+{
+  const parts = { pole: [], dark: [], red: [], white: [], blue: [], lamp: [] };
+  const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3(), Sc = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
+  const cyl = (r, h, seg = 8) => new THREE.CylinderGeometry(r, r, h, seg).toNonIndexed();
+  const boxg = (w, h, d) => new THREE.BoxGeometry(w, h, d).toNonIndexed();
+  const plate = (seg, r) => new THREE.CylinderGeometry(r, r, 0.03, seg).rotateX(Math.PI / 2).toNonIndexed();
+  const put = (arr, g, s, ox, oy, oz, rotY, extraRot) => {
+    const geo = g.clone(); if (extraRot) geo.applyMatrix4(extraRot);
+    M.compose(P.set(s.x, s.y, s.z), Q.setFromAxisAngle(up, rotY), Sc); arr.push(geo.applyMatrix4(new THREE.Matrix4().makeTranslation(ox, oy, oz).premultiply(M)));
+  };
+  for (const s of env.signs) {
+    const rotY = Math.atan2(ctr.x - s.x, ctr.z - s.z);              // panneaux tournés vers le site (lisibles depuis la maquette)
+    if (s.k === 'lampadaire') { put(parts.pole, cyl(0.07, 6), s, 0, 3, 0, rotY); put(parts.pole, boxg(0.08, 0.08, 1.1), s, 0, 5.95, 0.5, rotY); put(parts.lamp, boxg(0.32, 0.12, 0.5), s, 0, 5.9, 1.0, rotY); continue; }
+    put(parts.pole, cyl(0.05, 2.6), s, 0, 1.3, 0, rotY);
+    if (s.k === 'feu') { put(parts.dark, boxg(0.3, 0.85, 0.24), s, 0, 3.0, 0, rotY); put(parts.pole, cyl(0.05, 0.7), s, 0, 2.85, 0, rotY); }
+    if (s.k === 'stop') put(parts.red, plate(8, 0.36), s, 0, 2.3, 0.04, rotY, new THREE.Matrix4().makeRotationZ(Math.PI / 8));
+    if (s.k === 'cedez') { put(parts.red, plate(3, 0.45), s, 0, 2.3, 0.04, rotY, new THREE.Matrix4().makeRotationZ(-Math.PI / 2)); put(parts.white, plate(3, 0.3), s, 0, 2.3, 0.07, rotY, new THREE.Matrix4().makeRotationZ(-Math.PI / 2)); }
+    if (s.k === 'bus') put(parts.blue, boxg(0.55, 0.4, 0.04), s, 0, 2.45, 0.04, rotY);
+  }
+  const COL = { pole: 0x7d838a, dark: 0x2b3036, red: 0xc8262d, white: 0xffffff, blue: 0x1f5fb0, lamp: 0xf1f1ec };
+  for (const [k, list] of Object.entries(parts)) {
+    if (!list.length) continue;
+    const m = new THREE.Mesh(mergeGeometries(list), new THREE.MeshStandardMaterial({ color: COL[k], roughness: 0.6, metalness: k === 'pole' ? 0.3 : 0, emissive: k === 'lamp' ? 0x222018 : 0 }));
+    m.castShadow = true; scene.add(m);
+  }
+}
 
 /* ---------- noms de rues ---------- */
 const labels = env.labels.map((l) => {

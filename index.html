@@ -8,14 +8,14 @@
   :root{--panel:rgba(255,255,255,.78);--ink:#1d2430;--mute:#5d6878;--line:rgba(30,40,55,.12);--acc:#1f6feb}
   @media (prefers-color-scheme:dark){:root{--panel:rgba(22,27,34,.72);--ink:#e8ecf2;--mute:#9aa5b4;--line:rgba(255,255,255,.1);--acc:#5aa2ff}}
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;overflow:hidden;background:#cfdcea;color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+  html,body{margin:0;height:100%;overflow:hidden;background:#f3f4f5;color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
   canvas{display:block;width:100%;height:100%;touch-action:none}
   #ui{position:fixed;top:14px;left:14px;z-index:10;width:230px;padding:14px 16px;border-radius:16px;background:var(--panel);
       backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);box-shadow:0 8px 30px rgba(10,20,40,.18)}
   #ui b{display:block;font-size:15px}
   #ui .sub{color:var(--mute);font-size:12px;margin-bottom:10px}
   .tg{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);cursor:pointer;user-select:none}
-  .tg input{appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:10px;background:rgba(120,130,145,.35);position:relative;margin:0;cursor:pointer;transition:background .2s}
+  .tg input{appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:10px;background:rgba(120,130,145,.35);position:relative;margin:0;cursor:pointer;transition:background .2s;flex:none}
   .tg input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s}
   .tg input:checked{background:var(--acc)}
   .tg input:checked::after{left:16px}
@@ -23,14 +23,21 @@
   button:hover{border-color:var(--acc);color:var(--acc)}
   .street{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#3f4652;
           background:rgba(255,255,255,.86);padding:2px 8px;border-radius:5px;white-space:nowrap;box-shadow:0 1px 5px rgba(0,0,0,.2)}
+  .dest{position:fixed;left:0;top:0;z-index:6;pointer-events:none;display:flex;align-items:center;gap:8px;padding:6px 11px 6px 7px;border-radius:12px;background:rgba(255,255,255,.94);
+        box-shadow:0 4px 16px rgba(10,20,40,.22);white-space:nowrap;color:#1d2430}
+  .dest i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:700;font-size:15px}
+  .dest b{display:block;font-size:12.5px}
+  .dest span{display:block;font-size:11px;color:#5d6878}
+  .dest em{display:block;font-style:normal}
   #hint{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:5;font-size:12px;color:#fff;
         background:rgba(15,20,28,.45);backdrop-filter:blur(6px);padding:4px 12px;border-radius:20px;white-space:nowrap;transition:opacity .6s}
   #credit{position:fixed;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:5;font-size:10.5px;color:rgba(20,25,35,.6)}
-  #load{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#dfe7f0;color:#4a5566;transition:opacity .5s}
+  #load{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#f3f4f5;color:#4a5566;transition:opacity .5s}
   #load div{width:200px;text-align:center}
   #load i{display:block;height:3px;margin-top:10px;border-radius:2px;background:linear-gradient(90deg,#1f6feb var(--p,0%),rgba(0,0,0,.08) 0)}
-  @media (max-width:640px){#ui{left:8px;right:8px;top:8px;width:auto;padding:10px 12px;display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:center}
-    #ui .sub{display:none} #ui .tg{border:0;padding:0;gap:6px;font-size:12px} #ui button{grid-column:1/-1;margin-top:2px}}
+  @media (max-width:640px){#ui{left:8px;right:8px;top:8px;width:auto;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;align-items:center}
+    #ui>div:first-child{grid-column:1/-1} #ui .sub{display:none} #ui .tg{border:0;padding:0;gap:6px;font-size:12px} #ui button{grid-column:1/-1;margin-top:2px}
+    #hint{display:none} .dest{padding:4px 8px 4px 5px} .dest i{width:20px;height:20px;font-size:12px} .dest b{font-size:11px} .dest span{font-size:10px} .dest em{display:none}}
 </style>
 </head>
 <body>
@@ -39,10 +46,11 @@
   <div><b>Résidence Henri Clérisse</b><div class="sub">Bretteville-sur-Odon · 30 logements</div></div>
   <label class="tg">Végétation <input type="checkbox" id="veg" checked></label>
   <label class="tg">Noms de rues <input type="checkbox" id="streets" checked></label>
+  <label class="tg">Destinations <input type="checkbox" id="dests"></label>
   <button id="home">Recentrer la vue</button>
 </div>
 <div id="hint">Glisser pour tourner · molette ou pincer pour zoomer · clic droit ou deux doigts pour déplacer</div>
-<div id="credit">Terrain et bâtiments mitoyens : IFC du projet · Bâtiments, voirie et signalisation © contributeurs OpenStreetMap</div>
+<div id="credit">Bâtiments mitoyens : IFC du projet · Environnement © contributeurs OpenStreetMap · Itinéraires OSRM</div>
 <div id="load"><div>Chargement de la maquette…<i id="bar"></i></div></div>
 
 <script type="importmap">
@@ -63,35 +71,35 @@ const mobile = matchMedia('(max-width:640px), (pointer:coarse)').matches;
 const renderer = new THREE.WebGLRenderer({ canvas: $('c'), antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.25 : 1.5));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.78;
+renderer.toneMappingExposure = 0.72;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.shadowMap.autoUpdate = false;           // scène statique : l'ombre n'est calculée qu'au besoin
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 3000);
 const controls = new OrbitControls(camera, renderer.domElement);
-Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 10, maxDistance: 230, maxPolarAngle: Math.PI * 0.47 });
+Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 10, maxDistance: 260, maxPolarAngle: Math.PI * 0.47 });
 let dirty = 3, shadowDirty = true;
 
-/* ---------- ciel, lumière (soleil fixe : fin d'après-midi d'été, à l'ouest-sud-ouest) ---------- */
+/* ---------- ciel, brume blanche, lumière (soleil fixe : fin d'après-midi d'été, à l'ouest-sud-ouest) ---------- */
 const SUN_AZ = 248, SUN_EL = 30;                 // degrés ; azimut depuis le nord (-Z), vers l'est (+X)
 const az = THREE.MathUtils.degToRad(SUN_AZ), el = THREE.MathUtils.degToRad(SUN_EL);
 const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el));
-const HORIZON = new THREE.Color(0xf2f4f6), ZENITH = new THREE.Color(0x8fb3dc);
-scene.fog = new THREE.Fog(HORIZON, 180, 900);
+const HORIZON = new THREE.Color(0xf3f4f5), ZENITH = new THREE.Color(0xa9c3e0);
+scene.fog = new THREE.Fog(HORIZON, 160, 700);    // l'environnement se fond dans le blanc, comme en V1
 const dome = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), new THREE.ShaderMaterial({
   side: THREE.BackSide, depthWrite: false, fog: false,
   uniforms: { hor: { value: HORIZON }, top: { value: ZENITH }, sun: { value: sunDir } },
   vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
   fragmentShader: `uniform vec3 hor, top, sun; varying vec3 vD;
-    void main(){ vec3 d = normalize(vD); vec3 c = mix(hor, top, pow(clamp(d.y, 0.0, 1.0), 0.55));
-      float s = max(dot(d, sun), 0.0); c += vec3(1.0, 0.9, 0.75) * (pow(s, 600.0) * 2.0 + pow(s, 12.0) * 0.12);
+    void main(){ vec3 d = normalize(vD); vec3 c = mix(hor, top, pow(clamp(d.y, 0.0, 1.0), 0.6));
+      float s = max(dot(d, sun), 0.0); c += vec3(1.0, 0.92, 0.8) * (pow(s, 600.0) * 1.5 + pow(s, 14.0) * 0.08);
       gl_FragColor = vec4(c, 1.0);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
     }`,
 }));
-dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome);
+dome.renderOrder = -30; dome.frustumCulled = false; scene.add(dome);
 { // reflets et lumière d'ambiance : ciel physique réduit, calculé une fois
   const env = new THREE.Scene(), sky = new Sky(); sky.scale.setScalar(50); env.add(sky);
   sky.material.uniforms.sunPosition.value.copy(sunDir);
@@ -99,21 +107,20 @@ dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome);
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(env, 0, 0.1, 200, { size: 128 }).texture;
   scene.environmentIntensity = 0.35;
 }
-scene.add(new THREE.HemisphereLight(0xeef2f8, 0xbdb8ae, 0.75));
-const sun = new THREE.DirectionalLight(0xffe2bf, 3.4);
+scene.add(new THREE.HemisphereLight(0xeef2f8, 0xbdb8ae, 0.6));
+const sun = new THREE.DirectionalLight(0xffe2bf, 2.5);   // modéré : le blanc ne sature pas, la voirie reste lisible
 sun.castShadow = true;
 sun.shadow.mapSize.setScalar(mobile ? 2048 : 4096);
 sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.04; sun.shadow.radius = 2.5;
 scene.add(sun, sun.target);
 
-/* ---------- matériaux du bâtiment (légende des façades du permis, textures procédurales sans image) ---------- */
+/* ---------- matériaux du bâtiment (légende des façades du permis), sobres façon maquette ---------- */
 function canvasTex(draw, size = 256) {
   const c = document.createElement('canvas'); c.width = c.height = size; draw(c.getContext('2d'), size);
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; t.colorSpace = THREE.NoColorSpace; return t;
 }
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const speckle = (g, s, amp, px) => { for (let y = 0; y < s; y += px) for (let x = 0; x < s; x += px) { const v = 255 - rnd() * amp; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x, y, px, px); } };
-const noise = (amp, px = 1) => canvasTex((g, s) => speckle(g, s, amp, px));
 const lines = (n, amp, na) => canvasTex((g, s) => { speckle(g, s, na, 2); g.fillStyle = `rgba(0,0,0,${amp})`; for (let p = 0; p < s; p += s / n) g.fillRect(p, 0, 2, s); });
 const grid = (n, amp) => canvasTex((g, s) => { speckle(g, s, 14, 2); g.fillStyle = `rgba(0,0,0,${amp})`; for (let p = 0; p < s; p += s / n) { g.fillRect(p, 0, 2, s); g.fillRect(0, p, s, 2); } });
 const blocks = (amp) => canvasTex((g, s) => {
@@ -167,46 +174,45 @@ function makeMat(name) {
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
 const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
-const [bat, ctx, sol, env] = await Promise.all([
-  gltf.loadAsync('bso.glb'), gltf.loadAsync('context.glb'),
-  new THREE.TextureLoader(manager).loadAsync('sol.jpg'), fetch('env.json').then((r) => r.json()),
+const [bat, world, env] = await Promise.all([
+  gltf.loadAsync('bso.glb'), gltf.loadAsync('world.glb'), fetch('env.json').then((r) => r.json()),
 ]).catch((e) => { $('load').textContent = 'Erreur de chargement : ' + e.message; throw e; });
+const GY = env.GY;
 
-// bâtiment : on masque l'intérieur inutile en vue extérieure (faux plafonds)
 bat.scene.traverse((o) => {
   if (!o.isMesh) return;
-  const cat = (o.userData.name || o.name).split('|')[1];
-  if (cat === 'plafond') { o.visible = false; return; }
+  const name = o.userData.name || o.name, cat = name.split('|')[1];
+  if (cat === 'plafond') { o.visible = false; return; }            // faux plafonds : invisibles de l'extérieur
   const glass = o.material.name === 'verre';
-  o.material = makeMat(o.material.name); o.castShadow = !glass; o.receiveShadow = true;
-  if ((o.userData.name || o.name) === 'SOUS SOL|escalier') o.material = rampMat;   // rampe du parking souterrain : enrobé sombre, bien lisible
+  o.material = name === 'SOUS SOL|escalier' ? rampMat : makeMat(o.material.name);   // rampe du parking souterrain : enrobé sombre
+  o.castShadow = !glass; o.receiveShadow = true;
 });
 scene.add(bat.scene);
 
-// environnement : terrain (texture du sol plaquée en vue de dessus) + volumes voisins en blanc
-const { x0, z0, S } = env.sol;
-sol.colorSpace = THREE.SRGBColorSpace; sol.anisotropy = renderer.capabilities.getMaxAnisotropy(); sol.generateMipmaps = true;
-let terrain = null;
-const clayMat = new THREE.MeshStandardMaterial({ color: 0xf7f6f3, roughness: 0.95, envMapIntensity: 0.35, side: THREE.DoubleSide });
-ctx.scene.traverse((o) => {
+/* ---------- environnement plat « clay » : sol blanc, voirie en couches à ordre de dessin fixe (aucun scintillement) ---------- */
+const ground = new THREE.Mesh(new THREE.CircleGeometry(2500, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 1 }));
+ground.position.y = GY; ground.receiveShadow = true; ground.renderOrder = -20; scene.add(ground);
+const clayMat = new THREE.MeshStandardMaterial({ color: 0xf8f7f4, roughness: 0.95, envMapIntensity: 0.35, side: THREE.DoubleSide });
+const flat = (color, order) => new THREE.MeshStandardMaterial({ color, roughness: 1, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1 - order, polygonOffsetUnits: -1 - order });
+const LAYERS = { parking: [0xc9ccd0, 1], chaussee: [0xa7acb3, 2], trottoir: [0xdcd9d3, 3], passages: [0xffffff, 4],
+                 route_caen: [0, 5], route_a84: [0, 5], route_mairie: [0, 5] };
+const routes = new THREE.Group(); routes.visible = false; scene.add(routes);
+world.scene.traverse((o) => {
   if (!o.isMesh) return;
-  if (o.name === 'terrain') {
-    const g = o.geometry, p = g.attributes.position, uv = new Float32Array(p.count * 2), v = new THREE.Vector3();
-    for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld); uv[i * 2] = (v.x - x0) / S; uv[i * 2 + 1] = 1 - (v.z - z0) / S; }
-    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.computeVertexNormals();
-    o.material = new THREE.MeshStandardMaterial({ map: sol, roughness: 1, metalness: 0 });
-    o.receiveShadow = true; terrain = o;
-  } else {
+  o.geometry.computeVertexNormals();
+  if (o.name === 'bati' || o.name === 'mitoyens') {
     o.geometry = o.geometry.toNonIndexed(); o.geometry.computeVertexNormals();
-    o.material = clayMat;   // volumes IFC proches et volumes OSM : même blanc mat ; double face car l'orientation des faces n'est pas homogène
-    o.castShadow = o.receiveShadow = true;
+    o.material = clayMat; o.castShadow = o.receiveShadow = true; return;
   }
+  const L = LAYERS[o.name]; if (!L) return;
+  const isRoute = o.name.startsWith('route_');
+  const col = isRoute ? env.dests.find((d) => 'route_' + d.key === o.name)?.color ?? 0x1f6feb : L[0];
+  o.material = isRoute ? new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -8, polygonOffsetUnits: -8 }) : flat(col, L[1]);
+  o.renderOrder = -10 + L[1]; o.receiveShadow = !isRoute;
 });
-ctx.scene.updateMatrixWorld(true);
-scene.add(ctx.scene);
-// au-delà du relevé : un grand sol herbeux qui se fond dans la brume
-const far = new THREE.Mesh(new THREE.CircleGeometry(1400, 48).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xf1f0ec, roughness: 1 }));
-far.position.y = env.edgeY - 1.2; far.receiveShadow = false; scene.add(far);
+world.scene.position.y = GY + 0.02; world.scene.updateMatrixWorld(true);
+scene.add(world.scene);
+for (const n of ['route_caen', 'route_a84', 'route_mairie']) { const m = world.scene.getObjectByName(n); if (m) routes.attach(m); }
 
 /* ---------- cadrage ---------- */
 const box = new THREE.Box3().setFromObject(bat.scene), ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
@@ -235,77 +241,75 @@ const vegetation = new THREE.Group(); scene.add(vegetation);
   };
   env.planned.forEach((t, i) => {   // arbres du projet, posés sur la terre du jardin
     down.ray.origin.set(t.x, box.max.y + 5, t.z); const h = down.intersectObjects(terre, false)[0];
-    add({ x: t.x, z: t.z, y: h ? h.point.y : t.y, R: t.r * 0.95, th: 2.8 }, i);
+    add({ x: t.x, z: t.z, y: h ? h.point.y : GY, R: t.r * 0.95, th: 2.8 }, i);
   });
-  env.trees.forEach((t, i) => add({ ...t, R: 2.0 + (i % 5) * 0.35, th: 2.3 }, i + 10));
+  env.trees.forEach((t, i) => add({ x: t.x, z: t.z, y: GY, R: 2.0 + (i % 5) * 0.35, th: 2.3 }, i + 10));
   const mk = (geos, color) => { const m = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: true })); m.castShadow = m.receiveShadow = true; vegetation.add(m); };
-  mk(T, 0x8a7a66); mk(C, 0x7fa65f);
+  mk(T, 0x8a7a66); mk(C, 0x8fb470);
 }
 $('veg').onchange = (e) => { vegetation.visible = e.target.checked; shadowDirty = true; dirty = 2; };
 
-/* ---------- signalisation (OSM) : feux, stops, cédez-le-passage, arrêts de bus, lampadaires ---------- */
-{
-  const parts = { pole: [], dark: [], red: [], white: [], blue: [], lamp: [] };
-  const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3(), Sc = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
-  const cyl = (r, h, seg = 8) => new THREE.CylinderGeometry(r, r, h, seg).toNonIndexed();
-  const boxg = (w, h, d) => new THREE.BoxGeometry(w, h, d).toNonIndexed();
-  const plate = (seg, r) => new THREE.CylinderGeometry(r, r, 0.03, seg).rotateX(Math.PI / 2).toNonIndexed();
-  const put = (arr, g, s, ox, oy, oz, rotY, extraRot) => {
-    const geo = g.clone(); if (extraRot) geo.applyMatrix4(extraRot);
-    M.compose(P.set(s.x, s.y, s.z), Q.setFromAxisAngle(up, rotY), Sc); arr.push(geo.applyMatrix4(new THREE.Matrix4().makeTranslation(ox, oy, oz).premultiply(M)));
-  };
-  for (const s of env.signs) {
-    const rotY = Math.atan2(ctr.x - s.x, ctr.z - s.z);              // panneaux tournés vers le site (lisibles depuis la maquette)
-    if (s.k === 'lampadaire') { put(parts.pole, cyl(0.07, 6), s, 0, 3, 0, rotY); put(parts.pole, boxg(0.08, 0.08, 1.1), s, 0, 5.95, 0.5, rotY); put(parts.lamp, boxg(0.32, 0.12, 0.5), s, 0, 5.9, 1.0, rotY); continue; }
-    put(parts.pole, cyl(0.05, 2.6), s, 0, 1.3, 0, rotY);
-    if (s.k === 'feu') { put(parts.dark, boxg(0.3, 0.85, 0.24), s, 0, 3.0, 0, rotY); put(parts.pole, cyl(0.05, 0.7), s, 0, 2.85, 0, rotY); }
-    if (s.k === 'stop') put(parts.red, plate(8, 0.36), s, 0, 2.3, 0.04, rotY, new THREE.Matrix4().makeRotationZ(Math.PI / 8));
-    if (s.k === 'cedez') { put(parts.red, plate(3, 0.45), s, 0, 2.3, 0.04, rotY, new THREE.Matrix4().makeRotationZ(-Math.PI / 2)); put(parts.white, plate(3, 0.3), s, 0, 2.3, 0.07, rotY, new THREE.Matrix4().makeRotationZ(-Math.PI / 2)); }
-    if (s.k === 'bus') put(parts.blue, boxg(0.55, 0.4, 0.04), s, 0, 2.45, 0.04, rotY);
-  }
-  const COL = { pole: 0x7d838a, dark: 0x2b3036, red: 0xc8262d, white: 0xffffff, blue: 0x1f5fb0, lamp: 0xf1f1ec };
-  for (const [k, list] of Object.entries(parts)) {
-    if (!list.length) continue;
-    const m = new THREE.Mesh(mergeGeometries(list), new THREE.MeshStandardMaterial({ color: COL[k], roughness: 0.6, metalness: k === 'pole' ? 0.3 : 0, emissive: k === 'lamp' ? 0x222018 : 0 }));
-    m.castShadow = true; scene.add(m);
-  }
-}
-
-/* ---------- noms de rues ---------- */
+/* ---------- étiquettes : noms de rues + destinations (couche d'infos) ---------- */
 const labels = env.labels.map((l) => {
   const el = document.createElement('div'); el.className = 'street'; el.textContent = l.text; document.body.append(el);
-  return { el, pos: new THREE.Vector3(l.x, l.y + 0.6, l.z) };
+  return { el, pos: new THREE.Vector3(l.x, GY + 0.6, l.z), kind: 'street' };
 });
-const v3 = new THREE.Vector3(), occl = new THREE.Raycaster(), blockers = [bat.scene, ctx.scene];
+const hex = (c) => '#' + c.toString(16).padStart(6, '0');
+for (const d of env.dests) {
+  const el = document.createElement('div'); el.className = 'dest';
+  el.innerHTML = `<i style="background:${hex(d.color)}">➜</i><div><b>${d.name}</b><span>${d.sub ? '<em>' + d.sub + '</em>' : ''}${String(d.km).replace('.', ',')} km · ${d.min} min en voiture</span></div>`;
+  document.body.append(el);
+  labels.push({ el, pos: new THREE.Vector3(d.x, GY + 1.5, d.z), dir: new THREE.Vector3(d.dir[0], 0, d.dir[1]).normalize(), arrow: el.querySelector('i'), kind: 'dest' });
+}
+const v3 = new THREE.Vector3(), v4 = new THREE.Vector3(), occl = new THREE.Raycaster(), blockers = [bat.scene, world.scene.getObjectByName('bati'), world.scene.getObjectByName('mitoyens')].filter(Boolean);
 let lastOccl = 0;
 function updateOcclusion() {     // un nom de rue caché derrière un volume n'est pas affiché (vérifié au plus toutes les 250 ms)
   if (performance.now() - lastOccl < 250) return; lastOccl = performance.now();
   for (const l of labels) {
+    if (l.kind !== 'street') continue;
     const d = camera.position.distanceTo(l.pos); occl.set(camera.position, v3.copy(l.pos).sub(camera.position).normalize()); occl.far = d - 1;
     l.hidden = occl.intersectObjects(blockers, true).length > 0;
   }
   dirty = Math.max(dirty, 1);
 }
 function placeLabels() {
-  const on = $('streets').checked;
+  const placed = [];
+  const showS = $('streets').checked, showD = $('dests').checked;
   for (const l of labels) {
+    const on = l.kind === 'street' ? showS && !l.hidden && camera.position.distanceTo(l.pos) < 260 : showD;
     v3.copy(l.pos).project(camera);
-    const vis = on && !l.hidden && v3.z < 1 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1 && camera.position.distanceTo(l.pos) < 260;
+    let vis = on && v3.z < 1 && Math.abs(v3.x) < 1.15 && Math.abs(v3.y) < 1.15;
+    if (on && l.kind === 'dest' && !vis) {           // destination hors champ : l'étiquette reste épinglée au bord de l'écran, dans sa direction
+      if (v3.z > 1) { v3.x = -v3.x; v3.y = -v3.y; }
+      const k = Math.max(Math.abs(v3.x) / 0.82, Math.abs(v3.y) / 0.8, 1); v3.x /= k; v3.y /= k; vis = true;
+    }
     l.el.style.display = vis ? '' : 'none';
-    if (vis) l.el.style.transform = `translate(${(v3.x * 0.5 + 0.5) * innerWidth}px,${(-v3.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-50%)`;
+    if (!vis) continue;
+    let sx = (v3.x * 0.5 + 0.5) * innerWidth, sy = (-v3.y * 0.5 + 0.5) * innerHeight;
+    if (l.kind === 'dest') {                          // l'étiquette entière reste dans l'écran
+      const hw = l.el.offsetWidth / 2 + 8, hh = l.el.offsetHeight / 2 + 8;
+      sx = Math.min(Math.max(sx, hw), innerWidth - hw); sy = Math.min(Math.max(sy, hh + 60), innerHeight - hh - 24);
+      for (let n = 0; n < 4; n++) {                   // pas de chevauchement entre étiquettes de destination
+        const hit = placed.find((p) => Math.abs(p[0] - sx) < p[2] + hw && Math.abs(p[1] - sy) < p[3] + hh);
+        if (!hit) break; sy = hit[1] + (sy >= hit[1] ? 1 : -1) * (hit[3] + hh);
+      }
+      placed.push([sx, sy, hw, hh]);
+    }
+    l.el.style.transform = `translate(${sx}px,${sy}px) translate(-50%,-50%)`;
+    if (l.arrow) {   // flèche orientée dans le sens de la route, vue depuis la caméra
+      v4.copy(l.pos).add(l.dir).project(camera);
+      l.arrow.style.transform = `rotate(${Math.atan2(-(v4.y - v3.y), (v4.x - v3.x) * camera.aspect)}rad)`;
+    }
   }
 }
 $('streets').onchange = () => (dirty = 2);
+$('dests').onchange = (e) => { routes.visible = e.target.checked; dirty = 2; };
 
 /* ---------- caméra : jamais sous le sol, cible gardée près du site ---------- */
-const probe = new THREE.Raycaster(); probe.ray.direction.set(0, -1, 0);
-function keepAboveGround() {
+function keepInBounds() {
   const t = controls.target; const d = Math.hypot(t.x - ctr.x, t.z - ctr.z);
-  if (d > 120) { t.x = ctr.x + ((t.x - ctr.x) * 120) / d; t.z = ctr.z + ((t.z - ctr.z) * 120) / d; }
-  probe.ray.origin.set(camera.position.x, 400, camera.position.z);
-  const h = probe.intersectObject(terrain, false)[0];
-  const minY = (h ? h.point.y : env.edgeY) + 1.7;
-  if (camera.position.y < minY) camera.position.y = minY;
+  if (d > 160) { t.x = ctr.x + ((t.x - ctr.x) * 160) / d; t.z = ctr.z + ((t.z - ctr.z) * 160) / d; }
+  if (camera.position.y < GY + 1.7) camera.position.y = GY + 1.7;
 }
 $('home').onclick = () => { camera.position.copy(homePos()); controls.target.copy(HOME.tgt); dirty = 2; };
 
@@ -319,14 +323,14 @@ renderer.setAnimationLoop(() => {
   const moving = controls.update();
   if (!moving && dirty <= 0) return;
   dirty = Math.max(0, dirty - 1);
-  keepAboveGround();
+  keepInBounds();
   const dist = camera.position.distanceTo(controls.target), near = THREE.MathUtils.clamp(dist / 120, 0.2, 4);
   if (Math.abs(near - camera.near) > camera.near * 0.2) { camera.near = near; camera.updateProjectionMatrix(); }
   if (shadowDirty) { renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
   dome.position.copy(camera.position);
   renderer.render(scene, camera); if ($('streets').checked) updateOcclusion(); placeLabels();
 });
-window.__v2 = { camera, controls, ctr, R, scene, terrain, redraw: () => (dirty = 3), setHome: (p, t) => { camera.position.set(...p); controls.target.set(...t); dirty = 3; } };   // réglage du cadrage (débogage)
+window.__v2 = { camera, controls, ctr, R, scene, redraw: () => (dirty = 3), setHome: (p, t) => { camera.position.set(...p); controls.target.set(...t); dirty = 3; } };   // réglage du cadrage (débogage)
 $('load').style.opacity = 0; setTimeout(() => $('load').remove(), 500);
 setTimeout(() => ($('hint').style.opacity = 0), 7000);
 </script>

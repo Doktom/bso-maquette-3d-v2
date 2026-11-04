@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Résidence Henri Clérisse – 3D</title>
+<style>
+  :root{--panel:rgba(255,255,255,.78);--ink:#1d2430;--mute:#5d6878;--line:rgba(30,40,55,.12);--acc:#1f6feb}
+  @media (prefers-color-scheme:dark){:root{--panel:rgba(22,27,34,.72);--ink:#e8ecf2;--mute:#9aa5b4;--line:rgba(255,255,255,.1);--acc:#5aa2ff}}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#cfdcea;color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+  canvas{display:block;width:100%;height:100%;touch-action:none}
+  #ui{position:fixed;top:14px;left:14px;z-index:10;width:230px;padding:14px 16px;border-radius:16px;background:var(--panel);
+      backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);box-shadow:0 8px 30px rgba(10,20,40,.18)}
+  #ui b{display:block;font-size:15px}
+  #ui .sub{color:var(--mute);font-size:12px;margin-bottom:10px}
+  .tg{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);cursor:pointer;user-select:none}
+  .tg input{appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:10px;background:rgba(120,130,145,.35);position:relative;margin:0;cursor:pointer;transition:background .2s}
+  .tg input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s}
+  .tg input:checked{background:var(--acc)}
+  .tg input:checked::after{left:16px}
+  button{width:100%;margin-top:8px;font:inherit;color:var(--ink);background:rgba(120,130,145,.14);border:1px solid var(--line);border-radius:10px;padding:6px;cursor:pointer}
+  button:hover{border-color:var(--acc);color:var(--acc)}
+  .street{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#3f4652;
+          background:rgba(255,255,255,.86);padding:2px 8px;border-radius:5px;white-space:nowrap;box-shadow:0 1px 5px rgba(0,0,0,.2)}
+  #hint{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:5;font-size:12px;color:#fff;
+        background:rgba(15,20,28,.45);backdrop-filter:blur(6px);padding:4px 12px;border-radius:20px;white-space:nowrap;transition:opacity .6s}
+  #credit{position:fixed;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:5;font-size:10.5px;color:rgba(20,25,35,.6)}
+  #load{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#dfe7f0;color:#4a5566;transition:opacity .5s}
+  #load div{width:200px;text-align:center}
+  #load i{display:block;height:3px;margin-top:10px;border-radius:2px;background:linear-gradient(90deg,#1f6feb var(--p,0%),rgba(0,0,0,.08) 0)}
+  @media (max-width:640px){#ui{left:8px;right:8px;top:8px;width:auto;padding:10px 12px;display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:center}
+    #ui .sub{display:none} #ui .tg{border:0;padding:0;gap:6px;font-size:12px} #ui button{grid-column:1/-1;margin-top:2px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div><b>Résidence Henri Clérisse</b><div class="sub">Bretteville-sur-Odon · 30 logements</div></div>
+  <label class="tg">Végétation <input type="checkbox" id="veg" checked></label>
+  <label class="tg">Noms de rues <input type="checkbox" id="streets" checked></label>
+  <button id="home">Recentrer la vue</button>
+</div>
+<div id="hint">Glisser pour tourner · molette ou pincer pour zoomer · clic droit ou deux doigts pour déplacer</div>
+<div id="credit">Terrain et volumes : IFC du projet · Voirie © contributeurs OpenStreetMap</div>
+<div id="load"><div>Chargement de la maquette…<i id="bar"></i></div></div>
+
+<script type="importmap">
+{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { Sky } from 'three/addons/objects/Sky.js';
+
+const $ = (id) => document.getElementById(id);
+const mobile = matchMedia('(max-width:640px), (pointer:coarse)').matches;
+
+/* ---------- rendu ---------- */
+const renderer = new THREE.WebGLRenderer({ canvas: $('c'), antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.25 : 1.5));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.85;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false;           // scène statique : l'ombre n'est calculée qu'au besoin
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 3000);
+const controls = new OrbitControls(camera, renderer.domElement);
+Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 10, maxDistance: 230, maxPolarAngle: Math.PI * 0.47 });
+let dirty = 3, shadowDirty = true;
+
+/* ---------- ciel, lumière (soleil fixe : fin d'après-midi d'été, à l'ouest-sud-ouest) ---------- */
+const SUN_AZ = 248, SUN_EL = 30;                 // degrés ; azimut depuis le nord (-Z), vers l'est (+X)
+const az = THREE.MathUtils.degToRad(SUN_AZ), el = THREE.MathUtils.degToRad(SUN_EL);
+const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el));
+const HORIZON = new THREE.Color(0xe9eef3), ZENITH = new THREE.Color(0x5b8fd0);
+scene.fog = new THREE.Fog(HORIZON, 180, 900);
+const dome = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false, fog: false,
+  uniforms: { hor: { value: HORIZON }, top: { value: ZENITH }, sun: { value: sunDir } },
+  vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform vec3 hor, top, sun; varying vec3 vD;
+    void main(){ vec3 d = normalize(vD); vec3 c = mix(hor, top, pow(clamp(d.y, 0.0, 1.0), 0.55));
+      float s = max(dot(d, sun), 0.0); c += vec3(1.0, 0.9, 0.75) * (pow(s, 600.0) * 2.0 + pow(s, 12.0) * 0.12);
+      gl_FragColor = vec4(c, 1.0);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`,
+}));
+dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome);
+{ // reflets et lumière d'ambiance : ciel physique réduit, calculé une fois
+  const env = new THREE.Scene(), sky = new Sky(); sky.scale.setScalar(50); env.add(sky);
+  sky.material.uniforms.sunPosition.value.copy(sunDir);
+  sky.material.uniforms.turbidity.value = 3; sky.material.uniforms.rayleigh.value = 1.6;
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(env, 0, 0.1, 200, { size: 128 }).texture;
+  scene.environmentIntensity = 0.35;
+}
+scene.add(new THREE.HemisphereLight(0xdfe8f5, 0x6f6a5c, 0.6));
+const sun = new THREE.DirectionalLight(0xffe2bf, 3.4);
+sun.castShadow = true;
+sun.shadow.mapSize.setScalar(mobile ? 2048 : 4096);
+sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.04; sun.shadow.radius = 2.5;
+scene.add(sun, sun.target);
+
+/* ---------- matériaux du bâtiment (légende des façades du permis, textures procédurales sans image) ---------- */
+function canvasTex(draw, size = 256) {
+  const c = document.createElement('canvas'); c.width = c.height = size; draw(c.getContext('2d'), size);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; t.colorSpace = THREE.NoColorSpace; return t;
+}
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const speckle = (g, s, amp, px) => { for (let y = 0; y < s; y += px) for (let x = 0; x < s; x += px) { const v = 255 - rnd() * amp; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x, y, px, px); } };
+const noise = (amp, px = 1) => canvasTex((g, s) => speckle(g, s, amp, px));
+const lines = (n, amp, na) => canvasTex((g, s) => { speckle(g, s, na, 2); g.fillStyle = `rgba(0,0,0,${amp})`; for (let p = 0; p < s; p += s / n) g.fillRect(p, 0, 2, s); });
+const grid = (n, amp) => canvasTex((g, s) => { speckle(g, s, 14, 2); g.fillStyle = `rgba(0,0,0,${amp})`; for (let p = 0; p < s; p += s / n) { g.fillRect(p, 0, 2, s); g.fillRect(0, p, s, 2); } });
+const blocks = (amp) => canvasTex((g, s) => {
+  speckle(g, s, 30, 2); const h = s / 4;
+  for (let r = 0; r < 4; r++) { g.fillStyle = `rgba(0,0,0,${amp})`; g.fillRect(0, r * h, s, 3);
+    for (let x = (r % 2) * 40; x < s; x += 80) { g.fillStyle = `rgba(0,0,0,${amp})`; g.fillRect(x, r * h, 3, h); g.fillStyle = `rgba(0,0,0,${rnd() * 0.12})`; g.fillRect(x + 3, r * h + 3, 77, h - 3); } }
+});
+const LIB = {   // couleur, rugosité, métal, texture, taille du motif (m)
+  enduit_clair: { c: 0xeadfc6, r: 0.95, m: 0, t: () => noise(30, 2), s: 1.5 },
+  enduit_gris:  { c: 0x9d9fa2, r: 0.95, m: 0, t: () => noise(34, 2), s: 1.5 },
+  beton:        { c: 0xb2b2ae, r: 0.9,  m: 0, t: () => noise(60, 2), s: 1.2 },
+  platre:       { c: 0xf3f2ee, r: 0.95, m: 0 },
+  pierre:       { c: 0xb4a78f, r: 0.95, m: 0, t: () => blocks(0.35), s: 1.6 },
+  asphalte:     { c: 0x4a4d52, r: 0.95, m: 0, t: () => noise(70), s: 0.8 },
+  terre:        { c: 0x6f8752, r: 1,    m: 0, t: () => noise(90), s: 0.6 },
+  dalle:        { c: 0xa59f94, r: 0.9,  m: 0, t: () => grid(2, 0.28), s: 1.2 },
+  zinc:         { c: 0x858d94, r: 0.45, m: 0.2, t: () => lines(2, 0.4, 14), s: 1.0 },
+  gravier:      { c: 0x94918b, r: 1,    m: 0, t: () => noise(95), s: 0.5 },
+  menuiserie:   { c: 0x5c6167, r: 0.5,  m: 0.15 },
+  bois:         { c: 0xa8794d, r: 0.7,  m: 0, t: () => lines(10, 0.12, 40), s: 0.8 },
+  metal:        { c: 0x666b71, r: 0.5,  m: 0.5 },
+  divers:       { c: 0xa9a9a9, r: 0.9,  m: 0 },
+  verre:        { c: 0x6f93a8, r: 0.03, m: 0 },
+};
+const mats = new Map();
+function makeMat(name) {
+  if (mats.has(name)) return mats.get(name);
+  const d = LIB[name] ?? LIB.divers;
+  const mat = new THREE.MeshStandardMaterial({ color: d.c, roughness: d.r, metalness: d.m, flatShading: true });
+  mat.envMapIntensity = name === 'verre' ? 2.2 : d.m > 0.1 ? 0.9 : 0.5;
+  if (name === 'verre') Object.assign(mat, { transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide });
+  else Object.assign(mat, { polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+  if (d.t) {
+    const tex = d.t();
+    mat.onBeforeCompile = (sh) => {   // texture « triplanaire » en coordonnées monde (le modèle n'a pas d'UV)
+      sh.uniforms.uTex = { value: tex }; sh.uniforms.uSize = { value: d.s };
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform sampler2D uTex; uniform float uSize;')
+        .replace('#include <map_fragment>', `vec3 wn = abs(normalize(cross(dFdx(vWP), dFdy(vWP))));
+          vec2 tuv = (wn.y > wn.x && wn.y > wn.z) ? vWP.xz : (wn.x > wn.z ? vWP.zy : vWP.xy);
+          diffuseColor.rgb *= texture2D(uTex, tuv / uSize).rgb;`);
+    };
+    mat.customProgramCacheKey = () => 'tri_' + name;
+  }
+  mats.set(name, mat); return mat;
+}
+
+/* ---------- chargement ---------- */
+const manager = new THREE.LoadingManager();
+manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
+const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
+const [bat, ctx, sol, env] = await Promise.all([
+  gltf.loadAsync('bso.glb'), gltf.loadAsync('context.glb'),
+  new THREE.TextureLoader(manager).loadAsync('sol.jpg'), fetch('env.json').then((r) => r.json()),
+]).catch((e) => { $('load').textContent = 'Erreur de chargement : ' + e.message; throw e; });
+
+// bâtiment : on masque l'intérieur inutile en vue extérieure (faux plafonds)
+bat.scene.traverse((o) => {
+  if (!o.isMesh) return;
+  const cat = (o.userData.name || o.name).split('|')[1];
+  if (cat === 'plafond') { o.visible = false; return; }
+  const glass = o.material.name === 'verre';
+  o.material = makeMat(o.material.name); o.castShadow = !glass; o.receiveShadow = true;
+});
+scene.add(bat.scene);
+
+// environnement : terrain (texture du sol plaquée en vue de dessus) + volumes voisins en blanc
+const { x0, z0, S } = env.sol;
+sol.colorSpace = THREE.SRGBColorSpace; sol.anisotropy = renderer.capabilities.getMaxAnisotropy(); sol.generateMipmaps = true;
+let terrain = null;
+ctx.scene.traverse((o) => {
+  if (!o.isMesh) return;
+  if (o.name === 'terrain') {
+    const g = o.geometry, p = g.attributes.position, uv = new Float32Array(p.count * 2), v = new THREE.Vector3();
+    for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld); uv[i * 2] = (v.x - x0) / S; uv[i * 2 + 1] = 1 - (v.z - z0) / S; }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.computeVertexNormals();
+    o.material = new THREE.MeshStandardMaterial({ map: sol, roughness: 1, metalness: 0 });
+    o.receiveShadow = true; terrain = o;
+  } else {
+    o.geometry = o.geometry.toNonIndexed(); o.geometry.computeVertexNormals();
+    o.material = new THREE.MeshStandardMaterial({ color: 0xf4f2ee, roughness: 0.92, envMapIntensity: 0.4, side: THREE.DoubleSide });   // relevé IFC : orientation des faces non homogène
+    o.castShadow = o.receiveShadow = true;
+  }
+});
+ctx.scene.updateMatrixWorld(true);
+scene.add(ctx.scene);
+// au-delà du relevé : un grand sol herbeux qui se fond dans la brume
+const far = new THREE.Mesh(new THREE.CircleGeometry(1400, 48).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x6f8556, roughness: 1 }));
+far.position.y = env.edgeY - 1.2; far.receiveShadow = false; scene.add(far);
+
+/* ---------- cadrage ---------- */
+const box = new THREE.Box3().setFromObject(bat.scene), ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
+const R = Math.max(size.x, size.z);
+const HOME = { off: new THREE.Vector3(-R * 0.35, R * 0.75, -R * 1.45), tgt: ctr.clone().setY(ctr.y - 4) };   // depuis le nord : l'angle des deux rues
+const homePos = () => ctr.clone().add(HOME.off.clone().multiplyScalar(innerWidth / innerHeight < 0.8 ? 1.7 : 1));   // écran vertical : on recule
+camera.position.copy(homePos()); controls.target.copy(HOME.tgt);
+sun.position.copy(ctr).addScaledVector(sunDir, 250); sun.target.position.copy(ctr); sun.target.updateMatrixWorld();
+Object.assign(sun.shadow.camera, { left: -120, right: 120, top: 120, bottom: -120, near: 50, far: 500 }); sun.shadow.camera.updateProjectionMatrix();
+
+/* ---------- végétation : arbres low-poly fusionnés (prévus au plan masse + arbres existants OSM) ---------- */
+const vegetation = new THREE.Group(); scene.add(vegetation);
+{
+  const down = new THREE.Raycaster(); down.ray.direction.set(0, -1, 0);
+  const terre = []; bat.scene.traverse((o) => o.isMesh && o.material === mats.get('terre') && terre.push(o));
+  const crown = new THREE.IcosahedronGeometry(1, 1), trunk = new THREE.CylinderGeometry(0.16, 0.26, 1, 6).toNonIndexed();
+  const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), P = new THREE.Vector3(), Sc = new THREE.Vector3();
+  const C = [], T = [];
+  const add = (t, i) => {
+    const r = t.R, th = t.th, rot = (i * 2.399) % 6.283;
+    const put = (g, arr, px, py, pz, sx, sy, sz) => { E.set(0, rot, 0); Q.setFromEuler(E); M.compose(P.set(t.x + px, t.y + py, t.z + pz), Q, Sc.set(sx, sy, sz)); arr.push(g.clone().applyMatrix4(M)); };
+    put(trunk, T, 0, th / 2, 0, 1, th, 1);
+    put(crown, C, 0, th + r * 0.85, 0, r, r * 1.08, r);
+    put(crown, C, r * 0.3, th + r * 1.7, r * 0.12, r * 0.6, r * 0.6, r * 0.6);
+    put(crown, C, -r * 0.55, th + r * 0.55, r * 0.3, r * 0.52, r * 0.48, r * 0.52);
+  };
+  env.planned.forEach((t, i) => {   // arbres du projet, posés sur la terre du jardin
+    down.ray.origin.set(t.x, box.max.y + 5, t.z); const h = down.intersectObjects(terre, false)[0];
+    add({ x: t.x, z: t.z, y: h ? h.point.y : t.y, R: t.r * 0.95, th: 2.8 }, i);
+  });
+  env.trees.forEach((t, i) => add({ ...t, R: 2.0 + (i % 5) * 0.35, th: 2.3 }, i + 10));
+  const mk = (geos, color) => { const m = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: true })); m.castShadow = m.receiveShadow = true; vegetation.add(m); };
+  mk(T, 0x8a7a66); mk(C, 0x7fa65f);
+}
+$('veg').onchange = (e) => { vegetation.visible = e.target.checked; shadowDirty = true; dirty = 2; };
+
+/* ---------- noms de rues ---------- */
+const labels = env.labels.map((l) => {
+  const el = document.createElement('div'); el.className = 'street'; el.textContent = l.text; document.body.append(el);
+  return { el, pos: new THREE.Vector3(l.x, l.y + 0.6, l.z) };
+});
+const v3 = new THREE.Vector3(), occl = new THREE.Raycaster(), blockers = [bat.scene, ctx.scene];
+let lastOccl = 0;
+function updateOcclusion() {     // un nom de rue caché derrière un volume n'est pas affiché (vérifié au plus toutes les 250 ms)
+  if (performance.now() - lastOccl < 250) return; lastOccl = performance.now();
+  for (const l of labels) {
+    const d = camera.position.distanceTo(l.pos); occl.set(camera.position, v3.copy(l.pos).sub(camera.position).normalize()); occl.far = d - 1;
+    l.hidden = occl.intersectObjects(blockers, true).length > 0;
+  }
+  dirty = Math.max(dirty, 1);
+}
+function placeLabels() {
+  const on = $('streets').checked;
+  for (const l of labels) {
+    v3.copy(l.pos).project(camera);
+    const vis = on && !l.hidden && v3.z < 1 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1 && camera.position.distanceTo(l.pos) < 260;
+    l.el.style.display = vis ? '' : 'none';
+    if (vis) l.el.style.transform = `translate(${(v3.x * 0.5 + 0.5) * innerWidth}px,${(-v3.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-50%)`;
+  }
+}
+$('streets').onchange = () => (dirty = 2);
+
+/* ---------- caméra : jamais sous le sol, cible gardée près du site ---------- */
+const probe = new THREE.Raycaster(); probe.ray.direction.set(0, -1, 0);
+function keepAboveGround() {
+  const t = controls.target; const d = Math.hypot(t.x - ctr.x, t.z - ctr.z);
+  if (d > 120) { t.x = ctr.x + ((t.x - ctr.x) * 120) / d; t.z = ctr.z + ((t.z - ctr.z) * 120) / d; }
+  probe.ray.origin.set(camera.position.x, 400, camera.position.z);
+  const h = probe.intersectObject(terrain, false)[0];
+  const minY = (h ? h.point.y : env.edgeY) + 1.7;
+  if (camera.position.y < minY) camera.position.y = minY;
+}
+$('home').onclick = () => { camera.position.copy(homePos()); controls.target.copy(HOME.tgt); dirty = 2; };
+
+/* ---------- boucle : rendu seulement si quelque chose bouge ---------- */
+function resize() {
+  renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); dirty = 2;
+}
+addEventListener('resize', resize); new ResizeObserver(resize).observe(document.documentElement); resize();
+controls.addEventListener('start', () => ($('hint').style.opacity = 0));
+renderer.setAnimationLoop(() => {
+  const moving = controls.update();
+  if (!moving && dirty <= 0) return;
+  dirty = Math.max(0, dirty - 1);
+  keepAboveGround();
+  const dist = camera.position.distanceTo(controls.target), near = THREE.MathUtils.clamp(dist / 120, 0.2, 4);
+  if (Math.abs(near - camera.near) > camera.near * 0.2) { camera.near = near; camera.updateProjectionMatrix(); }
+  if (shadowDirty) { renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
+  dome.position.copy(camera.position);
+  renderer.render(scene, camera); if ($('streets').checked) updateOcclusion(); placeLabels();
+});
+window.__v2 = { camera, controls, ctr, R, scene, terrain, redraw: () => (dirty = 3), setHome: (p, t) => { camera.position.set(...p); controls.target.set(...t); dirty = 3; } };   // réglage du cadrage (débogage)
+$('load').style.opacity = 0; setTimeout(() => $('load').remove(), 500);
+setTimeout(() => ($('hint').style.opacity = 0), 7000);
+</script>
+</body>
+</html>

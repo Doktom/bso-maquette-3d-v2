@@ -174,8 +174,9 @@ function makeMat(name) {
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
 const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
+const V = '?v=2.2';                           // version des données : évite de mélanger avec un ancien fichier en cache
 const [bat, world, env] = await Promise.all([
-  gltf.loadAsync('bso.glb'), gltf.loadAsync('world.glb'), fetch('env.json').then((r) => r.json()),
+  gltf.loadAsync('bso.glb' + V), gltf.loadAsync('world.glb' + V), fetch('env.json' + V).then((r) => r.json()),
 ]).catch((e) => { $('load').textContent = 'Erreur de chargement : ' + e.message; throw e; });
 const GY = env.GY;
 
@@ -206,7 +207,7 @@ world.scene.traverse((o) => {
   }
   const L = LAYERS[o.name]; if (!L) return;
   const isRoute = o.name.startsWith('route_');
-  const col = isRoute ? env.dests.find((d) => 'route_' + d.key === o.name)?.color ?? 0x1f6feb : L[0];
+  const col = isRoute ? (env.dests ?? []).find((d) => 'route_' + d.key === o.name)?.color ?? 0x1f6feb : L[0];
   o.material = isRoute ? new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -8, polygonOffsetUnits: -8 }) : flat(col, L[1]);
   o.renderOrder = -10 + L[1]; o.receiveShadow = !isRoute;
 });
@@ -255,7 +256,7 @@ const labels = env.labels.map((l) => {
   return { el, pos: new THREE.Vector3(l.x, GY + 0.6, l.z), kind: 'street' };
 });
 const hex = (c) => '#' + c.toString(16).padStart(6, '0');
-for (const d of env.dests) {
+for (const d of env.dests ?? []) {
   const el = document.createElement('div'); el.className = 'dest';
   el.innerHTML = `<i style="background:${hex(d.color)}">➜</i><div><b>${d.name}</b><span>${d.sub ? '<em>' + d.sub + '</em>' : ''}${String(d.km).replace('.', ',')} km · ${d.min} min en voiture</span></div>`;
   document.body.append(el);

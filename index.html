@@ -29,15 +29,34 @@
   .dest b{display:block;font-size:12.5px}
   .dest span{display:block;font-size:11px;color:#5d6878}
   .dest em{display:block;font-style:normal}
-  #hint{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:5;font-size:12px;color:#fff;
+  #hint{position:fixed;left:50%;bottom:calc(66px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:5;font-size:12px;color:#fff;
         background:rgba(15,20,28,.45);backdrop-filter:blur(6px);padding:4px 12px;border-radius:20px;white-space:nowrap;transition:opacity .6s}
   #credit{position:fixed;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:5;font-size:10.5px;color:rgba(20,25,35,.6)}
   #load{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#f3f4f5;color:#4a5566;transition:opacity .5s}
   #load div{width:200px;text-align:center}
   #load i{display:block;height:3px;margin-top:10px;border-radius:2px;background:linear-gradient(90deg,#1f6feb var(--p,0%),rgba(0,0,0,.08) 0)}
+  /* visite guidée */
+  #tour{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:12;display:flex;flex-direction:column;align-items:center;gap:8px}
+  #tourBtn,#tourBar{display:flex;align-items:center;gap:8px;width:auto;margin:0;padding:9px 18px;border-radius:24px;background:var(--panel);color:var(--ink);font-weight:600;
+       backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);box-shadow:0 8px 30px rgba(10,20,40,.2);white-space:nowrap}
+  #tourBtn svg{width:16px;height:16px;fill:currentColor}
+  #tourMenu{display:none;width:300px;max-width:calc(100vw - 20px);padding:8px;border-radius:16px;background:var(--panel);border:1px solid var(--line);
+       backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);box-shadow:0 10px 34px rgba(10,20,40,.25)}
+  #tour.open #tourMenu{display:block}
+  #tourMenu .v{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 4px;padding:5px;text-align:left;border-radius:10px;background:transparent;border:1px solid transparent}
+  #tourMenu .v:hover{background:rgba(120,130,145,.12);border-color:var(--line);color:var(--ink)}
+  #tourMenu .v img{width:76px;height:43px;object-fit:cover;border-radius:6px;flex:none}
+  #tourMenu .v b{display:block;font-size:13px} #tourMenu .v span{display:block;font-size:11px;color:var(--mute)}
+  #tourMenu .go{margin:4px 0 0;padding:8px;font-weight:600;background:var(--acc);border-color:var(--acc);color:#fff}
+  #tourMenu .go:hover{color:#fff;filter:brightness(1.1)}
+  #tourBar{display:none;font-weight:500;padding:6px 6px 6px 16px}
+  #tourBar button{width:auto;margin:0;padding:4px 12px;border-radius:16px}
+  #tour.on #tourBtn,#tour.on #tourMenu{display:none} #tour.on #tourBar{display:flex}
+  #shot{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:0;transition:opacity 1.2s ease;width:100%;height:100%;object-fit:cover}
+  body.touring #hint{opacity:0}
   @media (max-width:640px){#ui{left:8px;right:8px;top:8px;width:auto;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;align-items:center}
     #ui>div:first-child{grid-column:1/-1} #ui .sub{display:none} #ui .tg{border:0;padding:0;gap:6px;font-size:12px} #ui button{grid-column:1/-1;margin-top:2px}
-    #hint{display:none} .dest{padding:4px 8px 4px 5px} .dest i{width:20px;height:20px;font-size:12px} .dest b{font-size:11px} .dest span{font-size:10px} .dest em{display:none}}
+    #hint{display:none} #credit{left:8px;right:8px;text-align:center;font-size:9.5px;bottom:calc(62px + env(safe-area-inset-bottom))} .dest{padding:4px 8px 4px 5px} .dest i{width:20px;height:20px;font-size:12px} .dest b{font-size:11px} .dest span{font-size:10px} .dest em{display:none}}
 </style>
 </head>
 <body>
@@ -50,6 +69,12 @@
   <button id="home">Recentrer la vue</button>
 </div>
 <div id="hint">Glisser pour tourner · molette ou pincer pour zoomer · clic droit ou deux doigts pour déplacer</div>
+<img id="shot" alt="">
+<div id="tour">
+  <div id="tourMenu"></div>
+  <button id="tourBtn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Visite guidée</button>
+  <div id="tourBar"><span id="tourLbl"></span><button id="tourStop">Quitter</button></div>
+</div>
 <div id="credit">Bâtiments mitoyens : IFC du projet · Environnement © contributeurs OpenStreetMap · Itinéraires OSRM</div>
 <div id="load"><div>Chargement de la maquette…<i id="bar"></i></div></div>
 
@@ -174,7 +199,7 @@ function makeMat(name) {
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
 const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
-const V = '?v=2.4';                           // version des données : évite de mélanger avec un ancien fichier en cache
+const V = '?v=2.5';                           // version des données : évite de mélanger avec un ancien fichier en cache
 const [bat, world, env] = await Promise.all([
   gltf.loadAsync('bso.glb' + V), gltf.loadAsync('world.glb' + V), fetch('env.json' + V).then((r) => r.json()),
 ]).catch((e) => { $('load').textContent = 'Erreur de chargement : ' + e.message; throw e; });
@@ -248,7 +273,7 @@ const vegetation = new THREE.Group(); scene.add(vegetation);
   const mk = (geos, color) => { const m = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: true })); m.castShadow = m.receiveShadow = true; vegetation.add(m); };
   mk(T, 0x8a7a66); mk(C, 0x8fb470);
 }
-$('veg').onchange = (e) => { vegetation.visible = e.target.checked; shadowDirty = true; dirty = 2; };
+$('veg').onchange = (e) => { vegetation.visible = e.target.checked && vegA > 0.01; shadowDirty = true; dirty = 2; };
 
 /* ---------- étiquettes : noms de rues + destinations (couche d'infos) ---------- */
 const labels = env.labels.map((l) => {
@@ -312,20 +337,126 @@ function keepInBounds() {
   if (d > 160) { t.x = ctr.x + ((t.x - ctr.x) * 160) / d; t.z = ctr.z + ((t.z - ctr.z) * 160) / d; }
   if (camera.position.y < GY + 1.7) camera.position.y = GY + 1.7;
 }
-$('home').onclick = () => { camera.position.copy(homePos()); controls.target.copy(HOME.tgt); dirty = 2; };
+$('home').onclick = () => { stopTour(); camera.position.copy(homePos()); controls.target.copy(HOME.tgt); dirty = 2; };
+
+/* ---------- visite guidée : vols de caméra vers les 3 points de vue du projet + fondu vers les images fournies ----------
+   Caméras retrouvées par recalage (points de fuite, fenêtres de toit, angles de toiture) : perspective 2 points
+   (caméra horizontale, verticales droites) avec décentrement — pp = point principal dans l'image 2000×1129. */
+const IMG_W = 2000, IMG_H = 1129;
+const SHOTS = [
+  { name: 'Cœur d\'îlot', sub: 'Vue depuis la cour et la rampe du parking', img: 'vues/vue-1.jpg', pos: [-1.48, 13.087, 40.465], yaw: 3.06256, f: 1659.9, pp: [905.6, 622.5] },     // ≈ 30 mm
+  { name: 'Angle des rues', sub: 'Route de Bretagne × rue du Viquet', img: 'vues/vue-2.jpg', pos: [3.45, 10.481, -45.876], yaw: -0.31073, f: 1179.4, pp: [1024, 560.9] },          // ≈ 21 mm
+  { name: 'Route de Bretagne', sub: 'Façade sur rue, à hauteur de piéton', img: 'vues/vue-3.jpg', pos: [-23.619, 6.803, -43.669], yaw: 6.67277, f: 1147.6, pp: [1055.9, 622.1] }, // ≈ 21 mm
+];
+const shotEl = $('shot'), tourEl = $('tour');
+const off = { x: 0, y: 0 };                       // décentrement courant (px écran)
+function frameOf(s) {   // fov + décentrement pour que la 3D se superpose exactement à l'image affichée (cover en paysage, contain en portrait)
+  const sw = innerWidth, sh = innerHeight, cover = sw / sh >= 1;
+  const k = cover ? Math.max(sw / IMG_W, sh / IMG_H) : Math.min(sw / IMG_W, sh / IMG_H);
+  return { fov: THREE.MathUtils.radToDeg(2 * Math.atan(sh / 2 / (s.f * k))), ox: (s.pp[0] - IMG_W / 2) * k, oy: (s.pp[1] - IMG_H / 2) * k, cover };
+}
+function applyOffset() {
+  if (Math.abs(off.x) < 0.01 && Math.abs(off.y) < 0.01) camera.clearViewOffset();
+  else camera.setViewOffset(innerWidth, innerHeight, -off.x, -off.y, innerWidth, innerHeight);
+  camera.updateProjectionMatrix();
+}
+let vegA = 1;
+function vegFade(a) {   // arbres en fondu : les images du projet n'en montrent pas
+  vegA = a; vegetation.traverse((o) => { if (o.isMesh) { if (o.material.transparent !== a < 1) { o.material.transparent = a < 1; o.material.depthWrite = a >= 1; o.material.needsUpdate = true; } o.material.opacity = a; o.castShadow = a > 0.99; } });
+  vegetation.visible = $('veg').checked && a > 0.01; shadowDirty = true;
+}
+const tmpCam = new THREE.PerspectiveCamera(), ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+let tour = null;
+function anim(dur, fn) {   // animation annulable (la visite s'arrête dès que l'utilisateur reprend la main)
+  const tk = tour;
+  return new Promise((res, rej) => {
+    const t0 = performance.now();
+    const step = (now) => {
+      if (tour !== tk) return rej('stop');
+      const t = Math.min((now - t0) / dur, 1); fn(t); dirty = 2;
+      t < 1 ? requestAnimationFrame(step) : res();
+    };
+    requestAnimationFrame(step);
+  });
+}
+const wait = (ms) => anim(ms, () => {});
+function fly(p1, look1, fov1, ox1, oy1, fadeVeg = true) {        // trajectoire en arc autour du bâtiment, regard guidé vers le projet à mi-parcours
+  const p0 = camera.position.clone(), fov0 = camera.fov, ox0 = off.x, oy0 = off.y;
+  const look0 = p0.clone().add(camera.getWorldDirection(v3).multiplyScalar(30));
+  const c = new THREE.Vector3(ctr.x, 0, ctr.z), a0 = Math.atan2(p0.x - c.x, p0.z - c.z), a1 = Math.atan2(p1.x - c.x, p1.z - c.z);
+  let da = a1 - a0; da = Math.atan2(Math.sin(da), Math.cos(da));
+  const r0 = Math.hypot(p0.x - c.x, p0.z - c.z), r1 = Math.hypot(p1.x - c.x, p1.z - c.z);
+  const d = p0.distanceTo(p1), bump = Math.min(d * 0.25, 30) * (Math.abs(da) > 0.6 ? 1 : 0.4), rMin = 48;
+  const mid = new THREE.Vector3(ctr.x, 9, ctr.z);
+  const va = vegA, vb = fadeVeg ? 0 : 1;
+  return anim(THREE.MathUtils.clamp(2400 + d * 38, 3000, 7500), (t) => {
+    const vt = THREE.MathUtils.clamp((t - (vb ? 0 : 0.6)) / 0.4, 0, 1); if (va !== vb) vegFade(THREE.MathUtils.lerp(va, vb, vt));
+    const e = ease(t), a = a0 + da * e, s = Math.sin(Math.PI * e);
+    const r = THREE.MathUtils.lerp(r0, r1, e), rr = Math.max(r, THREE.MathUtils.lerp(r, rMin, s));   // on reste hors des volumes pendant le vol
+    camera.position.set(c.x + Math.sin(a) * rr, THREE.MathUtils.lerp(p0.y, p1.y, e) + bump * s, c.z + Math.cos(a) * rr);
+    const w = 2 * e * (1 - e);                                                                          // cible : Bézier départ → projet → arrivée
+    tmpCam.position.copy(camera.position);
+    tmpCam.lookAt(v4.copy(look0).multiplyScalar((1 - e) ** 2).addScaledVector(mid, w).addScaledVector(look1, e * e));
+    camera.quaternion.copy(tmpCam.quaternion);
+    camera.fov = THREE.MathUtils.lerp(fov0, fov1, e); off.x = THREE.MathUtils.lerp(ox0, ox1, e); off.y = THREE.MathUtils.lerp(oy0, oy1, e); applyOffset();
+  });
+}
+async function showShot(s) {
+  const fr = frameOf(s), p1 = new THREE.Vector3(...s.pos), look1 = p1.clone().add(new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw)).multiplyScalar(30));
+  shotEl.style.objectFit = fr.cover ? 'cover' : 'contain'; shotEl.src = s.img;
+  await fly(p1, look1, fr.fov, fr.ox, fr.oy);
+  await wait(700);
+  shotEl.style.opacity = 1; await wait(1300 + 4000);      // fondu 3D → image, puis arrêt sur l'image
+  shotEl.style.opacity = 0; await wait(1300 + 500);       // fondu retour vers la 3D
+}
+function release(keepTarget) {    // rend la main : l'orbite reprend autour d'un point devant la caméra
+  const fov0 = camera.fov, ox0 = off.x, oy0 = off.y, t0 = performance.now();
+  if (!keepTarget) controls.target.copy(camera.position).add(camera.getWorldDirection(v3).multiplyScalar(Math.max(15, camera.position.distanceTo(ctr) * 0.8)));
+  const step = (now) => {       // retour en douceur à l'objectif standard (40°, sans décentrement)
+    if (tour) return;
+    const e = ease(Math.min((now - t0) / 700, 1));
+    camera.fov = THREE.MathUtils.lerp(fov0, 40, e); off.x = ox0 * (1 - e); off.y = oy0 * (1 - e); applyOffset(); dirty = 2;
+    if (e < 1) requestAnimationFrame(step); else controls.enabled = true;
+  };
+  requestAnimationFrame(step);
+}
+async function runTour(list, goHome) {
+  stopTour(); tour = {}; const tk = tour;
+  tourEl.classList.remove('open'); tourEl.classList.add('on'); document.body.classList.add('touring'); controls.enabled = false;
+  list.forEach((s) => (new Image().src = s.img));          // préchargement des images
+  try {
+    for (const s of list) { $('tourLbl').textContent = (list.length > 1 ? `Vue ${SHOTS.indexOf(s) + 1}/3 · ` : '') + s.name; await showShot(s); }
+    if (goHome) { $('tourLbl').textContent = 'Retour à la vue d\'ensemble'; await fly(homePos(), HOME.tgt, 40, 0, 0, false); controls.target.copy(HOME.tgt); }
+  } catch (e) { if (e !== 'stop') throw e; }
+  if (tour === tk) { tour = null; endTour(goHome); }
+}
+function endTour(keepTarget) { if (vegA < 1) vegFade(1); tourEl.classList.remove('on'); document.body.classList.remove('touring'); shotEl.style.opacity = 0; release(keepTarget); }
+function stopTour() { if (!tour) return; tour = null; endTour(); }
+$('tourMenu').innerHTML = SHOTS.map((s, i) => `<button class="v" data-i="${i}"><img src="${s.img.replace('.jpg', '-mini.jpg')}" alt=""><div><b>${i + 1} · ${s.name}</b><span>${s.sub}</span></div></button>`).join('')
+  + '<button class="go">▶ Lancer la visite</button>';
+$('tourBtn').onclick = (e) => { e.stopPropagation(); tourEl.classList.toggle('open'); $('hint').style.opacity = 0; };
+$('tourMenu').onclick = (e) => {
+  e.stopPropagation(); const b = e.target.closest('button'); if (!b) return;
+  b.classList.contains('go') ? runTour(SHOTS, true) : runTour([SHOTS[+b.dataset.i]], false);
+};
+$('tourStop').onclick = stopTour;
+addEventListener('pointerdown', (e) => { if (!tourEl.contains(e.target)) tourEl.classList.remove('open'); });
+renderer.domElement.addEventListener('pointerdown', stopTour);
+renderer.domElement.addEventListener('wheel', stopTour, { passive: true });
+addEventListener('keydown', (e) => e.key === 'Escape' && stopTour());
 
 /* ---------- boucle : rendu seulement si quelque chose bouge ---------- */
 function resize() {
-  renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); dirty = 2;
+  renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; applyOffset(); dirty = 2;
 }
 addEventListener('resize', resize); new ResizeObserver(resize).observe(document.documentElement); resize();
 controls.addEventListener('start', () => ($('hint').style.opacity = 0));
 renderer.setAnimationLoop(() => {
-  const moving = controls.update();
+  const moving = tour ? false : controls.update();   // pendant la visite, la caméra est pilotée par l'animation
   if (!moving && dirty <= 0) return;
   dirty = Math.max(0, dirty - 1);
-  keepInBounds();
-  const dist = camera.position.distanceTo(controls.target), near = THREE.MathUtils.clamp(dist / 120, 0.2, 4);
+  if (!tour) keepInBounds();
+  const dist = tour ? 25 : camera.position.distanceTo(controls.target), near = THREE.MathUtils.clamp(dist / 120, 0.2, 4);
   if (Math.abs(near - camera.near) > camera.near * 0.2) { camera.near = near; camera.updateProjectionMatrix(); }
   if (shadowDirty) { renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
   dome.position.copy(camera.position);

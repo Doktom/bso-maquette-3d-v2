@@ -174,7 +174,7 @@ function makeMat(name) {
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
 const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
-const V = '?v=2.3';                           // version des données : évite de mélanger avec un ancien fichier en cache
+const V = '?v=2.4';                           // version des données : évite de mélanger avec un ancien fichier en cache
 const [bat, world, env] = await Promise.all([
   gltf.loadAsync('bso.glb' + V), gltf.loadAsync('world.glb' + V), fetch('env.json' + V).then((r) => r.json()),
 ]).catch((e) => { $('load').textContent = 'Erreur de chargement : ' + e.message; throw e; });
@@ -196,7 +196,7 @@ ground.position.y = GY; ground.receiveShadow = true; ground.renderOrder = -20; s
 const clayMat = new THREE.MeshStandardMaterial({ color: 0xf8f7f4, roughness: 0.95, envMapIntensity: 0.35, side: THREE.DoubleSide });
 const flat = (color, order) => new THREE.MeshStandardMaterial({ color, roughness: 1, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1 - order, polygonOffsetUnits: -1 - order });
 const LAYERS = { parking: [0xc9ccd0, 1], chaussee: [0xa7acb3, 2], trottoir: [0xdcd9d3, 3], passages: [0xffffff, 4],
-                 route_caen: [0, 5], route_a84: [0, 5], route_mairie: [0, 5] };
+                 route_caen: [0, 5], route_a84: [0, 5] };
 const routes = new THREE.Group(); routes.visible = false; scene.add(routes);
 world.scene.traverse((o) => {
   if (!o.isMesh) return;
@@ -213,7 +213,7 @@ world.scene.traverse((o) => {
 });
 world.scene.position.y = GY + 0.02; world.scene.updateMatrixWorld(true);
 scene.add(world.scene);
-for (const n of ['route_caen', 'route_a84', 'route_mairie']) { const m = world.scene.getObjectByName(n); if (m) routes.attach(m); }
+for (const n of ['route_caen', 'route_a84']) { const m = world.scene.getObjectByName(n); if (m) routes.attach(m); }
 
 /* ---------- cadrage ---------- */
 const box = new THREE.Box3().setFromObject(bat.scene), ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());

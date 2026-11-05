@@ -174,7 +174,7 @@ function makeMat(name) {
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
 const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
-const V = '?v=2.2';                           // version des données : évite de mélanger avec un ancien fichier en cache
+const V = '?v=2.3';                           // version des données : évite de mélanger avec un ancien fichier en cache
 const [bat, world, env] = await Promise.all([
   gltf.loadAsync('bso.glb' + V), gltf.loadAsync('world.glb' + V), fetch('env.json' + V).then((r) => r.json()),
 ]).catch((e) => { $('load').textContent = 'Erreur de chargement : ' + e.message; throw e; });

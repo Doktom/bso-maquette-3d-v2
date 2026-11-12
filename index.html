@@ -154,6 +154,22 @@
   .ltab .st{display:inline-flex;align-items:center;gap:6px;font-weight:500} .ltab .st i{width:8px;height:8px;border-radius:50%}
   .ltab .none{padding:30px;text-align:center;color:var(--mute)}
   #tools>#bTour{display:none}
+  /* ensoleillement */
+  #sunPanel{position:fixed;left:14px;bottom:calc(36px + env(safe-area-inset-bottom));z-index:12;width:380px;padding:12px 16px 14px;display:none}
+  body.sunOn #sunPanel{display:block} body.sunOn #dock{display:none}
+  #sunPanel .shd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  #sunClose{width:28px;height:28px;border-radius:8px;background:var(--soft)}
+  #sunDates{gap:5px} #sunDates .chip{padding:5px 9px} #sunDates .chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+  .chip.cal{position:relative;cursor:pointer} .chip.cal svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2}
+  .chip.cal input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+  .chip.cal input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;cursor:pointer}
+  .srow{display:flex;align-items:baseline;gap:12px;margin-top:12px} .srow b{font:400 30px/1 "Ubuntu Condensed",Ubuntu,sans-serif;color:var(--navy)} .srow span{font-size:12.5px;color:var(--mute)} .srow span b{font:inherit;font-weight:700;color:var(--ink)}
+  #sunT{width:100%;margin:10px 0 2px;accent-color:#f0a030;height:22px;cursor:pointer}
+  .slim{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mute)}
+  .sday{margin-top:8px;font-size:12px;font-weight:500} .snote{margin-top:6px;font-size:11px;color:var(--mute)}
+  .cmp{position:fixed;left:0;top:0;z-index:4;pointer-events:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--navy);font-weight:700;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .cmp.n{background:var(--red);color:#fff}
+  .hlbl{position:fixed;left:0;top:0;z-index:4;pointer-events:none;font-size:11px;font-weight:700;color:#b86a00;text-shadow:0 0 3px #fff,0 0 3px #fff}
   #load{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#f3f4f5;color:var(--mute);transition:opacity .5s}
   #load div{width:220px;text-align:center} #load img{height:64px;display:block;margin:0 auto 14px;border-radius:8px}
   #load i{display:block;height:3px;margin-top:10px;border-radius:2px;background:linear-gradient(90deg,var(--red) var(--p,0%),rgba(0,0,0,.08) 0)}
@@ -171,7 +187,7 @@
     #listModal{padding:0} #listModal .win{height:100%;border-radius:0} #listModal .lbody{flex-direction:column;overflow:auto}
     #lFilt{width:auto;border-right:0;border-bottom:1px solid var(--line);overflow:visible} .ltab{overflow:visible}
     .ltab th:nth-child(5),.ltab td:nth-child(5),.ltab th:nth-child(6),.ltab td:nth-child(6){display:none} .ltab td,.ltab th{padding:9px 8px}
-    #dock{display:none} body.dockOn #dock,body.touring #dock{display:flex} #tools>#bTour{display:grid}
+    #dock{display:none} body.dockOn #dock,body.touring #dock{display:flex} #tools>#bTour{display:grid} #sunPanel{left:8px;right:8px;width:auto;bottom:calc(8px + env(safe-area-inset-bottom))} body.sunOn #ui{display:none} #sunPanel .snote{display:none}
     #ui{bottom:calc(8px + env(safe-area-inset-bottom))} body.dockOn #ui{bottom:calc(112px + env(safe-area-inset-bottom))}
     #lotModal{padding:0} #lotModal .win{height:100%;border-radius:0} #lotModal header{flex-wrap:wrap;padding:10px 12px;gap:8px} #lotModal header h2{font-size:18px;flex:1 1 70%} #lotModal header a,#lotModal header button{flex:1 1 40%;justify-content:center} #lotModal .ztools .hint{display:none}
     #lotModal .body{flex-direction:column;overflow:auto} #lotModal .planw{flex:none;height:52vh;padding:8px} #lotInfo{width:auto;border-left:0;border-top:1px solid var(--line);overflow:visible}
@@ -196,10 +212,20 @@
   <div id="tourBar"><span id="tourLbl"></span><button id="tourStop">Quitter</button></div>
 </div>
 <div id="tools" class="card">
+  <button id="bSun" title="Ensoleillement"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
   <button id="bTour" title="Visite guidée"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
   <button id="bSet" title="Affichage"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   <button id="bFull" title="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   <button id="bHelp" title="Aide"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h0"/></svg></button>
+</div>
+<div id="sunPanel" class="card">
+  <div class="shd"><span class="sec">Ensoleillement</span><button id="sunClose" aria-label="Fermer">✕</button></div>
+  <div class="chips" id="sunDates"></div>
+  <div class="srow"><b id="sunTime">--:--</b><span id="sunInfo"></span></div>
+  <input type="range" id="sunT" aria-label="Heure">
+  <div class="slim"><span id="sunRise"></span><span id="sunSet"></span></div>
+  <div class="sday" id="sunDay"></div>
+  <div class="snote">Position réelle du soleil sur la parcelle (heure légale française). Ombres portées par le projet et les bâtiments voisins.</div>
 </div>
 <div id="setPop" class="card">
   <label class="tg">Végétation <input type="checkbox" id="veg" checked></label>
@@ -281,14 +307,16 @@ const dome = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), new THREE.Sh
     }`,
 }));
 dome.renderOrder = -30; dome.frustumCulled = false; scene.add(dome);
-{ // reflets et lumière d'ambiance : ciel physique réduit, calculé une fois
-  const env = new THREE.Scene(), sky = new Sky(); sky.scale.setScalar(50); env.add(sky);
-  sky.material.uniforms.sunPosition.value.copy(sunDir);
-  sky.material.uniforms.turbidity.value = 3; sky.material.uniforms.rayleigh.value = 1.6;
-  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(env, 0, 0.1, 200, { size: 128 }).texture;
-  scene.environmentIntensity = 0.35;
+// reflets et lumière d'ambiance : ciel physique réduit, recalculé quand le soleil bouge (ensoleillement)
+const envScene = new THREE.Scene(), envSky = new Sky(); envSky.scale.setScalar(50); envScene.add(envSky);
+envSky.material.uniforms.turbidity.value = 3; envSky.material.uniforms.rayleigh.value = 1.6;
+const pmrem = new THREE.PMREMGenerator(renderer); let envRT = null, envTimer = 0;
+function buildEnv() {
+  envSky.material.uniforms.sunPosition.value.copy(sunDir);
+  const old = envRT; envRT = pmrem.fromScene(envScene, 0, 0.1, 200, { size: 128 }); scene.environment = envRT.texture; old?.dispose(); dirty = 3;
 }
-scene.add(new THREE.HemisphereLight(0xeef2f8, 0xbdb8ae, 0.6));
+buildEnv(); scene.environmentIntensity = 0.35;
+const hemi = new THREE.HemisphereLight(0xeef2f8, 0xbdb8ae, 0.6); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffe2bf, 2.5);   // modéré : le blanc ne sature pas, la voirie reste lisible
 sun.castShadow = true;
 sun.shadow.mapSize.setScalar(mobile ? 2048 : 4096);
@@ -359,7 +387,7 @@ function makeMat(name) {
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
 const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
-const V = '?v=2.8';                           // version des données : évite de mélanger avec un ancien fichier en cache
+const V = '?v=2.9';                           // version des données : évite de mélanger avec un ancien fichier en cache
 const getJSON = (u, o) => fetch(u, o).then((r) => r.json());
 const [bat, world, env, storeys, caps, lotsGeo, lotsDispo] = await Promise.all([
   gltf.loadAsync('bso.glb' + V), gltf.loadAsync('world.glb' + V), getJSON('env.json' + V),
@@ -430,7 +458,7 @@ const HOME = { off: new THREE.Vector3(-R * 0.35, R * 0.75, -R * 1.45), tgt: ctr.
 const homePos = () => ctr.clone().add(HOME.off.clone().multiplyScalar(innerWidth / innerHeight < 0.8 ? 1.7 : 1));   // écran vertical : on recule
 camera.position.copy(homePos()); controls.target.copy(HOME.tgt);
 sun.position.copy(ctr).addScaledVector(sunDir, 250); sun.target.position.copy(ctr); sun.target.updateMatrixWorld();
-Object.assign(sun.shadow.camera, { left: -120, right: 120, top: 120, bottom: -120, near: 50, far: 500 }); sun.shadow.camera.updateProjectionMatrix();
+Object.assign(sun.shadow.camera, { left: -150, right: 150, top: 150, bottom: -150, near: 20, far: 520 }); sun.shadow.camera.updateProjectionMatrix();
 
 /* ---------- végétation : arbres low-poly fusionnés (prévus au plan masse + arbres existants OSM) ---------- */
 const vegetation = new THREE.Group(); scene.add(vegetation);
@@ -924,6 +952,182 @@ addEventListener('resize', () => $('lotModal').classList.contains('open') && pla
 renderLegend(); setLevel('all', false);
 if (mobile) $('ui').classList.add('min');   // petit écran : les étages restent visibles, la liste des lots se déplie d'un geste
 
+/* ---------- ensoleillement réel : position du soleil (algorithme NOAA) à la parcelle, heure légale française ---------- */
+const SITE = { lat: 49.16432, lon: -0.41966 };                       // centre de la parcelle (recalage BAN + cadastre)
+const NORTH = new THREE.Vector3(0.04536, 0, -0.99897), EAST = new THREE.Vector3(0.99897, 0, 0.04536);   // nord géographique dans la maquette (2,6° de -Z)
+const rad = Math.PI / 180, deg = 180 / Math.PI;
+function solar(ms) {     // ms = instant UTC -> { az (° depuis le nord, sens horaire), el (° apparente, réfraction comprise), elGeo }
+  const jc = (ms / 864e5 + 2440587.5 - 2451545) / 36525;
+  const L = (280.46646 + jc * (36000.76983 + jc * 0.0003032)) % 360, M = 357.52911 + jc * (35999.05029 - 0.0001537 * jc);
+  const e = 0.016708634 - jc * (0.000042037 + 0.0000001267 * jc);
+  const C = Math.sin(M * rad) * (1.914602 - jc * (0.004817 + 0.000014 * jc)) + Math.sin(2 * M * rad) * (0.019993 - 0.000101 * jc) + Math.sin(3 * M * rad) * 0.000289;
+  const om = 125.04 - 1934.136 * jc, lam = L + C - 0.00569 - 0.00478 * Math.sin(om * rad);
+  const eps = 23 + (26 + (21.448 - jc * (46.815 + jc * (0.00059 - jc * 0.001813))) / 60) / 60 + 0.00256 * Math.cos(om * rad);
+  const dec = Math.asin(Math.sin(eps * rad) * Math.sin(lam * rad));
+  const y = Math.tan((eps / 2) * rad) ** 2;
+  const eqt = 4 * deg * (y * Math.sin(2 * L * rad) - 2 * e * Math.sin(M * rad) + 4 * e * y * Math.sin(M * rad) * Math.cos(2 * L * rad) - 0.5 * y * y * Math.sin(4 * L * rad) - 1.25 * e * e * Math.sin(2 * M * rad));
+  const d = new Date(ms), utcMin = d.getUTCHours() * 60 + d.getUTCMinutes() + d.getUTCSeconds() / 60;
+  let ha = ((utcMin + eqt + 4 * SITE.lon) % 1440) / 4 - 180; if (ha < -180) ha += 360;
+  const phi = SITE.lat * rad, cz = Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(ha * rad);
+  const zen = Math.acos(Math.min(1, Math.max(-1, cz))), elGeo = 90 - zen * deg;
+  let az = Math.acos(Math.min(1, Math.max(-1, (Math.sin(phi) * Math.cos(zen) - Math.sin(dec)) / (Math.cos(phi) * Math.sin(zen))))) * deg;
+  az = ha > 0 ? (az + 180) % 360 : (540 - az) % 360;
+  const te = Math.tan(elGeo * rad);                                 // réfraction atmosphérique (formule NOAA)
+  const refr = elGeo > 85 ? 0 : elGeo > 5 ? 58.1 / te - 0.07 / te ** 3 + 0.000086 / te ** 5 : elGeo > -0.575 ? 1735 + elGeo * (-518.2 + elGeo * (103.4 + elGeo * (-12.79 + elGeo * 0.711))) : -20.772 / te;
+  return { az, el: elGeo + refr / 3600, elGeo };
+}
+const lastSun = (y, m) => { const d = new Date(Date.UTC(y, m + 1, 0)); return d.getUTCDate() - d.getUTCDay(); };   // dernier dimanche du mois (m : 0-11)
+function parisOffset(y, m, day, minutes) {   // heure légale : UTC+2 du dernier dimanche de mars au dernier dimanche d'octobre (1 h UTC), sinon UTC+1
+  const t = Date.UTC(y, m, day, 0, minutes) - 3600e3;              // instant UTC si on était en heure d'hiver
+  return t >= Date.UTC(y, 2, lastSun(y, 2), 1) && t < Date.UTC(y, 9, lastSun(y, 9), 1) ? 2 : 1;
+}
+const toUTC = (D, minutes) => Date.UTC(D.y, D.m, D.d, 0, minutes) - parisOffset(D.y, D.m, D.d, minutes) * 3600e3;
+const hm = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
+const CARD16 = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO'];
+function dayInfo(D) {    // lever, coucher (centre du disque à -0,833°), midi solaire
+  const el = (m) => solar(toUTC(D, m)).elGeo + 0.833;
+  let rise = null, set = null, noon = 0, best = -99;
+  for (let m = 0; m < 1440; m += 4) {
+    const a = el(m), b = el(m + 4);
+    if (a < 0 && b >= 0) rise = m + (4 * -a) / (b - a);
+    if (a >= 0 && b < 0) set = m + (4 * a) / (a - b);
+    if (a > best) { best = a; noon = m; }
+  }
+  for (let m = noon - 4; m <= noon + 4; m += 0.25) { const a = el(m); if (a > best) { best = a; noon = m; } }
+  return { rise, set, noon, max: best - 0.833 };
+}
+const sunDirOf = (s, out = new THREE.Vector3()) => {
+  const ce = Math.cos(s.el * rad);
+  return out.copy(NORTH).multiplyScalar(Math.cos(s.az * rad) * ce).addScaledVector(EAST, Math.sin(s.az * rad) * ce).setY(Math.sin(s.el * rad)).normalize();
+};
+
+/* lumière : réglée d'après la hauteur réelle du soleil (lumière plus chaude et plus faible près de l'horizon) */
+const DEF = { dir: sunDir.clone(), col: sun.color.clone(), I: sun.intensity, H: hemi.intensity };
+const warm = new THREE.Color(0xffa860);
+function applySun(dir, el) {
+  sunDir.copy(dir);
+  const k = THREE.MathUtils.smoothstep(el, 0, 20);
+  sun.intensity = 1.0 + 2.4 * k; sun.color.copy(warm).lerp(DEF.col, THREE.MathUtils.smoothstep(el, 2, 25));   // ombres plus contrastées qu'en vue « maquette »
+  hemi.intensity = 0.32 + 0.12 * k; scene.environmentIntensity = 0.22 + 0.04 * k;
+  sun.position.copy(ctr).addScaledVector(sunDir, 250); sun.target.position.copy(ctr); sun.target.updateMatrixWorld();
+  clearTimeout(envTimer); envTimer = setTimeout(buildEnv, 250);
+  shadowDirty = true; dirty = 3;
+}
+
+/* course du soleil dans la 3D : arc du jour, disque solaire, heures, rose des vents au sol */
+const sunViz = new THREE.Group(); sunViz.visible = false; scene.add(sunViz);
+const R_ARC = 56, R_CMP = 38, C0 = new THREE.Vector3(ctr.x, GY + 0.15, ctr.z);
+const arcLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xf0a030, fog: false, transparent: true, opacity: 0.95 }));
+const hourDots = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ color: 0xf0a030, size: 7, sizeAttenuation: false, fog: false }));
+const sunBall = new THREE.Mesh(new THREE.SphereGeometry(2.4, 24, 12), new THREE.MeshBasicMaterial({ color: 0xffc23a, fog: false }));
+const sunHalo = new THREE.Mesh(new THREE.SphereGeometry(5, 24, 12), new THREE.MeshBasicMaterial({ color: 0xffd36b, fog: false, transparent: true, opacity: 0.28, depthWrite: false }));
+const azLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: 0xf0a030, dashSize: 1.6, gapSize: 1, fog: false }));
+{
+  const ring = [];
+  for (let i = 0; i <= 128; i++) { const a = (i / 128) * Math.PI * 2; ring.push(C0.x + Math.cos(a) * R_CMP, C0.y, C0.z + Math.sin(a) * R_CMP); }
+  const ticks = [];
+  for (let i = 0; i < 16; i++) {                                    // graduations tous les 22,5°, plus longues aux points cardinaux
+    const a = i * 22.5 * rad, v = NORTH.clone().multiplyScalar(Math.cos(a)).addScaledVector(EAST, Math.sin(a)), l = i % 4 ? 1.5 : 4;
+    ticks.push(C0.x + v.x * R_CMP, C0.y, C0.z + v.z * R_CMP, C0.x + v.x * (R_CMP + l), C0.y, C0.z + v.z * (R_CMP + l));
+  }
+  const m = new THREE.LineBasicMaterial({ color: 0x00162e, transparent: true, opacity: 0.45, fog: false });
+  sunViz.add(new THREE.Line(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(ring, 3)), m),
+             new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(ticks, 3)), m),
+             arcLine, hourDots, sunBall, sunHalo, azLine);
+}
+const sunLabels = [];
+const mkLbl = (cls, txt, pos) => { const el = document.createElement('div'); el.className = cls; el.textContent = txt; el.style.display = 'none'; document.body.append(el); const l = { el, pos }; sunLabels.push(l); return l; };
+[['N', 0], ['E', 90], ['S', 180], ['O', 270]].forEach(([t, a]) => mkLbl('cmp' + (t === 'N' ? ' n' : ''), t, C0.clone().addScaledVector(NORTH, Math.cos(a * rad) * (R_CMP + 8)).addScaledVector(EAST, Math.sin(a * rad) * (R_CMP + 8))));
+let hourLbls = [];
+function buildArc(D, info) {
+  const pts = [], dots = [], v = new THREE.Vector3();
+  for (const l of hourLbls) { l.el.remove(); sunLabels.splice(sunLabels.indexOf(l), 1); }
+  hourLbls = [];
+  for (let m = info.rise; m <= info.set + 0.1; m += 4) { sunDirOf(solar(toUTC(D, Math.min(m, info.set))), v); pts.push(C0.x + v.x * R_ARC, C0.y + v.y * R_ARC, C0.z + v.z * R_ARC); }
+  for (let h = Math.ceil(info.rise / 60); h * 60 <= info.set; h++) {
+    sunDirOf(solar(toUTC(D, h * 60)), v); const p = C0.clone().addScaledVector(v, R_ARC); dots.push(p.x, p.y, p.z);
+    if (h % 2 === 0) hourLbls.push(mkLbl('hlbl', h + ' h', p.clone().addScaledVector(v, 5)));
+  }
+  arcLine.geometry.dispose(); arcLine.geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  hourDots.geometry.dispose(); hourDots.geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(dots, 3));
+}
+function placeSunLabels() {
+  for (const l of sunLabels) {
+    v3.copy(l.pos).project(camera);
+    const vis = sunViz.visible && v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05;
+    l.el.style.display = vis ? '' : 'none';
+    if (vis) l.el.style.transform = `translate(${(v3.x * 0.5 + 0.5) * innerWidth}px,${(-v3.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-50%)`;
+  }
+}
+
+/* panneau : dates, curseur de l'heure (du lever au coucher), lecture des valeurs */
+const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const parisNow = () => { const n = new Date(), y = n.getUTCFullYear(); let D = { y, m: n.getUTCMonth(), d: n.getUTCDate() };   // date et heure actuelles à Paris
+  const off = parisOffset(D.y, D.m, D.d, n.getUTCHours() * 60 + n.getUTCMinutes() + 60); const p = new Date(n.getTime() + off * 3600e3);
+  return { D: { y: p.getUTCFullYear(), m: p.getUTCMonth(), d: p.getUTCDate() }, min: p.getUTCHours() * 60 + p.getUTCMinutes() }; };
+const Y = parisNow().D.y;
+const PRESETS = [
+  { k: 'eq1', t: '20 mars', s: 'Équinoxe de printemps', D: { y: Y, m: 2, d: 20 } },
+  { k: 'sol1', t: '21 juin', s: 'Solstice d\'été', D: { y: Y, m: 5, d: 21 } },
+  { k: 'eq2', t: '23 sept.', s: 'Équinoxe d\'automne', D: { y: Y, m: 8, d: 23 } },
+  { k: 'sol2', t: '21 déc.', s: 'Solstice d\'hiver', D: { y: Y, m: 11, d: 21 } },
+  { k: 'now', t: 'Aujourd\'hui', s: 'Date du jour' },
+];
+const SUN = { on: false, D: PRESETS[1].D, info: null, min: 15 * 60 };   // 15 h par défaut
+$('sunDates').innerHTML = PRESETS.map((p) => `<button class="chip" data-k="${p.k}" title="${p.s}">${p.t}</button>`).join('')
+  + '<label class="chip cal" title="Choisir une date"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><input type="date" id="sunDate"></label>';
+function setDay(D, key, min) {
+  const prev = SUN.min;
+  SUN.D = D; SUN.info = dayInfo(D);
+  $('sunDates').querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c.dataset.k === key || (key === 'cal' && c.classList.contains('cal'))));
+  $('sunDate').value = `${D.y}-${String(D.m + 1).padStart(2, '0')}-${String(D.d).padStart(2, '0')}`;
+  const r = Math.ceil(SUN.info.rise), s = Math.floor(SUN.info.set);
+  Object.assign($('sunT'), { min: r, max: s, step: 1 });
+  // on garde l'heure choisie si elle est en plein jour ce jour-là, sinon début d'après-midi (midi solaire + 2 h)
+  const want = min ?? prev, day = want >= r + 30 && want <= s - 30;
+  SUN.min = THREE.MathUtils.clamp(day ? want : SUN.info.noon + 120, r, s);
+  $('sunT').value = SUN.min;
+  $('sunRise').textContent = `Lever ${hm(SUN.info.rise)}`; $('sunSet').textContent = `Coucher ${hm(SUN.info.set)}`;
+  const len = SUN.info.set - SUN.info.rise;
+  $('sunDay').textContent = `${D.d} ${MOIS[D.m]} ${D.y} · jour de ${Math.floor(len / 60)} h ${String(Math.round(len % 60)).padStart(2, '0')} · midi solaire ${hm(SUN.info.noon)} (hauteur max ${Math.round(SUN.info.max)}°)`;
+  buildArc(D, SUN.info); updateSun();
+}
+function updateSun() {
+  if (!SUN.on) return;
+  const s = solar(toUTC(SUN.D, SUN.min)), dir = sunDirOf(s);
+  $('sunTime').textContent = hm(SUN.min);
+  $('sunInfo').innerHTML = `Soleil à <b>${Math.round(s.az)}°</b> (${CARD16[Math.round(s.az / 22.5) % 16]}) · hauteur <b>${Math.max(0, s.el).toFixed(0)}°</b>`;
+  const p = C0.clone().addScaledVector(dir, R_ARC); sunBall.position.copy(p); sunHalo.position.copy(p);
+  const g = new THREE.Vector3(dir.x, 0, dir.z).normalize().multiplyScalar(R_CMP);
+  azLine.geometry.dispose(); azLine.geometry = new THREE.BufferGeometry().setFromPoints([C0, C0.clone().add(g)]); azLine.computeLineDistances();
+  applySun(dir, s.el);
+}
+function sunMode(on) {
+  SUN.on = on; sunViz.visible = on;
+  document.body.classList.toggle('sunOn', on); $('bSun').classList.toggle('on', on);
+  scene.fog.far = on ? 900 : 700;
+  if (on) {
+    stopTour();
+    if (!SUN.info) { const n = parisNow(); setDay(n.D, 'now', n.min); }
+    else updateSun();
+    if (level === 'all') flyTo(ctr.clone().add(HOME.off.clone().multiplyScalar(innerWidth / innerHeight < 0.8 ? 2.2 : 1.3)), HOME.tgt.clone().setY(GY + 12));
+  } else {
+    sun.color.copy(DEF.col); sun.intensity = DEF.I; hemi.intensity = DEF.H;
+    sunDir.copy(DEF.dir); sun.position.copy(ctr).addScaledVector(sunDir, 250); scene.environmentIntensity = 0.35; buildEnv(); shadowDirty = true;
+  }
+  placeSunLabels(); dirty = 3;
+}
+$('bSun').onclick = () => sunMode(!SUN.on);
+$('sunClose').onclick = () => sunMode(false);
+$('sunT').oninput = (e) => { SUN.min = +e.target.value; updateSun(); };
+$('sunDates').onclick = (e) => {
+  const c = e.target.closest('.chip'); if (!c || c.classList.contains('cal')) return;
+  if (c.dataset.k === 'now') { const n = parisNow(); setDay(n.D, 'now', n.min); }
+  else setDay(PRESETS.find((p) => p.k === c.dataset.k).D, c.dataset.k);
+};
+$('sunDate').onchange = (e) => { const [y, m, d] = e.target.value.split('-').map(Number); if (y) setDay({ y, m: m - 1, d }, 'cal'); };
+window.__sun = { solar, toUTC, dayInfo, parisOffset };   // contrôle (débogage)
+
 /* ---------- boucle : rendu seulement si quelque chose bouge ---------- */
 function resize() {
   renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; applyOffset(); dirty = 2;
@@ -945,7 +1149,7 @@ renderer.setAnimationLoop(() => {
   if (Math.abs(near - camera.near) > camera.near * 0.2) { camera.near = near; camera.updateProjectionMatrix(); }
   if (shadowDirty) { renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
   dome.position.copy(camera.position);
-  renderer.render(scene, camera); if ($('streets').checked) updateOcclusion(); placeLabels(); placeLots();
+  renderer.render(scene, camera); if ($('streets').checked) updateOcclusion(); placeLabels(); placeLots(); if (sunViz.visible) placeSunLabels();
 });
 window.__v2 = { setLevel, selectLot, camera, controls, ctr, R, scene, redraw: () => (dirty = 3), setHome: (p, t) => { camera.position.set(...p); controls.target.set(...t); dirty = 3; } };   // réglage du cadrage (débogage)
 $('load').style.opacity = 0; setTimeout(() => $('load').remove(), 500);

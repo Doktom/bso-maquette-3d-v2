@@ -1,0 +1,96 @@
+{
+ "_info": "Disponibilité des lots : disponible | option | vendu. Fichier destiné à être généré par le back-office.",
+ "maj": "2026-11-12",
+ "lots": {
+  "A001": {
+   "statut": "disponible"
+  },
+  "A002": {
+   "statut": "disponible"
+  },
+  "A003": {
+   "statut": "disponible"
+  },
+  "A101": {
+   "statut": "disponible"
+  },
+  "A102": {
+   "statut": "disponible"
+  },
+  "A103": {
+   "statut": "disponible"
+  },
+  "A104": {
+   "statut": "disponible"
+  },
+  "A105": {
+   "statut": "disponible"
+  },
+  "A106": {
+   "statut": "disponible"
+  },
+  "A107": {
+   "statut": "disponible"
+  },
+  "A108": {
+   "statut": "disponible"
+  },
+  "A109": {
+   "statut": "disponible"
+  },
+  "A110": {
+   "statut": "disponible"
+  },
+  "A111": {
+   "statut": "disponible"
+  },
+  "A201": {
+   "statut": "disponible"
+  },
+  "A202": {
+   "statut": "disponible"
+  },
+  "A203": {
+   "statut": "disponible"
+  },
+  "A204": {
+   "statut": "disponible"
+  },
+  "A205": {
+   "statut": "disponible"
+  },
+  "A206": {
+   "statut": "disponible"
+  },
+  "A207": {
+   "statut": "disponible"
+  },
+  "A208": {
+   "statut": "disponible"
+  },
+  "A209": {
+   "statut": "disponible"
+  },
+  "A210": {
+   "statut": "disponible"
+  },
+  "A211": {
+   "statut": "disponible"
+  },
+  "A301": {
+   "statut": "disponible"
+  },
+  "A302": {
+   "statut": "disponible"
+  },
+  "A303": {
+   "statut": "disponible"
+  },
+  "A304": {
+   "statut": "disponible"
+  },
+  "A305": {
+   "statut": "disponible"
+  }
+ }
+}

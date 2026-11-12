@@ -19,3 +19,15 @@ Version 1 (coupes, logements cliquables, plans de vente) : https://doktom.github
 Test local : `python -m http.server 8000` puis http://localhost:8000
 
 Crédits : three.js (MIT) · © contributeurs OpenStreetMap (ODbL) · itinéraires OSRM · bâtiments mitoyens : IFC du projet (DND Architectes).
+
+## Étages, lots et disponibilités
+
+- `lots-geo.json` : les 30 lots (typologie, surfaces, pièces, orientation, emprise au sol), d'après les plans de vente indice 3.
+- `plans/Axxx.pdf` (téléchargement) et `plans/Axxx.jpg` (visionneuse zoomable).
+- `lots.json` : **disponibilité de chaque lot**, lue sans cache à chaque chargement. C'est ce fichier que le futur back-office devra écrire :
+
+```json
+{ "maj": "2026-11-12", "lots": { "A101": { "statut": "disponible" }, "A102": { "statut": "option" }, "A103": { "statut": "vendu" } } }
+```
+
+Statuts reconnus : `disponible` (vert), `option` (orange), `vendu` (rouge). Un lot absent ou au statut inconnu est affiché « Disponible ».

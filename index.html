@@ -10,10 +10,65 @@
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;overflow:hidden;background:#f3f4f5;color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
   canvas{display:block;width:100%;height:100%;touch-action:none}
-  #ui{position:fixed;top:14px;left:14px;z-index:10;width:230px;padding:14px 16px;border-radius:16px;background:var(--panel);
-      backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);box-shadow:0 8px 30px rgba(10,20,40,.18)}
-  #ui b{display:block;font-size:15px}
-  #ui .sub{color:var(--mute);font-size:12px;margin-bottom:10px}
+  #ui{position:fixed;top:14px;left:14px;z-index:10;width:300px;max-height:calc(100vh - 28px);display:flex;flex-direction:column;border-radius:18px;background:var(--panel);
+      backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);box-shadow:0 8px 30px rgba(10,20,40,.18);overflow:hidden}
+  #ui .hd{position:relative;padding:14px 16px 10px;cursor:default}
+  #ui .hd b{display:block;font-size:15px}
+  #ui .sub{color:var(--mute);font-size:12px}
+  #ui .scroll{overflow:auto;padding:0 12px 12px;flex:1 1 auto;min-height:0}
+  .sec{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:10px 4px 6px}
+  .lv{display:flex;align-items:center;gap:6px;width:100%;margin:0 0 5px;padding:9px 12px;text-align:left;border-radius:12px;background:rgba(120,130,145,.1);border:1px solid transparent;font-size:14px}
+  .lv b{font-weight:700} .lv span{color:var(--mute);font-size:12.5px;flex:1}
+  .lv em{font-style:normal;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(120,130,145,.18);color:var(--mute)}
+  .lv:hover{border-color:var(--line);color:var(--ink)}
+  .lv.on{background:#1d2430;color:#fff} .lv.on span{color:rgba(255,255,255,.7)} .lv.on em{background:var(--acc);color:#fff}
+  @media (prefers-color-scheme:dark){.lv.on{background:#e8ecf2;color:#1d2430} .lv.on span{color:#4a5566}}
+  #lots{border-top:1px solid var(--line);margin-top:6px;padding-top:4px}
+  .grp{font-size:11px;font-weight:700;color:var(--mute);margin:8px 6px 2px}
+  .lot{display:grid;grid-template-columns:14px 1fr auto;gap:0 10px;align-items:center;width:100%;margin:0;padding:7px 8px;text-align:left;border-radius:10px;background:transparent;border:1px solid transparent}
+  .lot i{width:14px;height:14px;border-radius:4px;grid-row:span 2}
+  .lot b{font-size:14px} .lot small{color:var(--mute);font-size:11.5px;grid-column:2} .lot strong{font-size:14px;grid-row:span 2;text-align:right}
+  .lot strong u{display:block;text-decoration:none;font-size:10.5px;font-weight:600}
+  .lot:hover,.lot.hov{background:rgba(120,130,145,.12);border-color:var(--line);color:var(--ink)}
+  .lot.sel{background:rgba(31,111,235,.12);border-color:var(--acc)}
+  .seg{display:flex;padding:3px;border-radius:11px;background:rgba(120,130,145,.14);gap:3px}
+  .seg button{margin:0;padding:6px;border:0;border-radius:8px;background:transparent;font-size:12.5px;font-weight:600;color:var(--mute)}
+  .seg button.on{background:#fff;color:#1d2430;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+  .legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin:8px 4px 0;font-size:12px;color:var(--mute)}
+  .legend span{display:flex;align-items:center;gap:5px} .legend i{width:10px;height:10px;border-radius:3px}
+  .note{font-size:12px;color:var(--mute);margin:10px 4px 2px}
+  details.aff{border-top:1px solid var(--line);margin-top:10px;padding-top:4px}
+  details.aff summary{cursor:pointer;list-style:none;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding:6px 4px}
+  details.aff summary::-webkit-details-marker{display:none}
+  details.aff summary::after{content:" \25BE"} details.aff[open] summary::after{content:" \25B4"}
+  .lbl{position:fixed;left:0;top:0;z-index:4;pointer-events:none;font-size:11px;font-weight:800;color:#fff;padding:2px 7px;border-radius:7px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .lbl.hov{outline:2px solid #fff;z-index:5}
+  /* fiche lot */
+  #card{position:fixed;top:14px;right:14px;z-index:11;width:340px;max-height:calc(100vh - 28px);overflow:auto;display:none;padding:16px 18px 18px;border-radius:18px;background:var(--panel);
+        backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--line);box-shadow:0 10px 34px rgba(10,20,40,.22)}
+  #card h2{margin:0;font-size:20px} #card .x{position:absolute;top:10px;right:10px;width:30px;height:30px;margin:0;padding:0;border-radius:50%;font-size:18px;line-height:1}
+  #card .tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+  .tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:9px;color:#fff}
+  .tag.l{background:rgba(120,130,145,.16);color:var(--ink);font-weight:600}
+  #card .big{display:flex;gap:10px;margin-bottom:10px} #card .big div{flex:1;padding:9px 11px;border-radius:12px;background:rgba(120,130,145,.1)}
+  #card .big b{display:block;font-size:18px} #card .big span{font-size:11.5px;color:var(--mute)}
+  #card table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px} #card td{padding:4px 2px;border-bottom:1px solid var(--line)} #card td+td{text-align:right;white-space:nowrap}
+  #card tr.out td{color:var(--mute)}
+  #card .pl{display:block;width:100%;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:zoom-in}
+  #card .row{display:flex;gap:8px} #card .row>*{flex:1}
+  .btn{display:block;width:auto;text-align:center;margin-top:8px;padding:8px;border-radius:10px;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;border:1px solid var(--acc);background:var(--acc);color:#fff}
+  .btn.ghost{background:transparent;color:var(--acc)}
+  .btn:hover{filter:brightness(1.08);color:#fff} .btn.ghost:hover{color:var(--acc);background:rgba(31,111,235,.08)}
+  #card .fine{font-size:11.5px;color:var(--mute);margin-top:10px}
+  /* plan de vente plein écran */
+  #plan{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;background:rgba(14,18,24,.86);backdrop-filter:blur(6px)}
+  #plan .bar{display:flex;align-items:center;gap:8px;padding:10px 14px;color:#fff}
+  #plan .bar b{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #plan .bar button,#plan .bar a{width:auto;margin:0;padding:6px 12px;border-radius:9px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;font:inherit;font-size:13px;text-decoration:none;cursor:pointer}
+  #plan .bar a{background:var(--acc);border-color:var(--acc);font-weight:600}
+  #pstage{flex:1;position:relative;overflow:hidden;cursor:grab;touch-action:none;background:#fff;margin:0 14px 14px;border-radius:12px}
+  #pstage.drag{cursor:grabbing}
+  #pimg{position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;-webkit-user-drag:none;max-width:none}
   .tg{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);cursor:pointer;user-select:none}
   .tg input{appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:10px;background:rgba(120,130,145,.35);position:relative;margin:0;cursor:pointer;transition:background .2s;flex:none}
   .tg input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s}
@@ -54,20 +109,36 @@
   #tour.on #tourBtn,#tour.on #tourMenu{display:none} #tour.on #tourBar{display:flex}
   #shot{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:0;transition:opacity 1.2s ease;width:100%;height:100%;object-fit:cover}
   body.touring #hint{opacity:0}
-  @media (max-width:640px){#ui{left:8px;right:8px;top:8px;width:auto;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;align-items:center}
-    #ui>div:first-child{grid-column:1/-1} #ui .sub{display:none} #ui .tg{border:0;padding:0;gap:6px;font-size:12px} #ui button{grid-column:1/-1;margin-top:2px}
+  @media (max-width:640px){#ui{left:8px;right:8px;top:8px;width:auto;max-height:46vh}
+    #ui .hd{padding:10px 14px 6px;cursor:pointer} #ui .hd::after{content:"\25B4";position:absolute;right:16px;top:12px;color:var(--mute)} #ui.min .hd::after{content:"\25BE"} #ui.min .scroll{display:none}
+    #ui .scroll{padding:0 10px 10px} #levels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px} .lv{margin:0;padding:7px 2px;justify-content:center;flex-direction:column;gap:2px;font-size:13px} .lv span{display:none} .lv em{font-size:10px;padding:1px 6px}
+    #card{left:8px;right:8px;top:auto;bottom:calc(64px + env(safe-area-inset-bottom));width:auto;max-height:52vh}
+    #plan .bar{flex-wrap:wrap} #plan .bar b{font-size:12px;flex-basis:100%} #pstage{margin:0 6px 6px}
     #hint{display:none} #credit{left:8px;right:8px;text-align:center;font-size:9.5px;bottom:calc(62px + env(safe-area-inset-bottom))} .dest{padding:4px 8px 4px 5px} .dest i{width:20px;height:20px;font-size:12px} .dest b{font-size:11px} .dest span{font-size:10px} .dest em{display:none}}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="ui">
-  <div><b>Résidence Henri Clérisse</b><div class="sub">Bretteville-sur-Odon · 30 logements</div></div>
-  <label class="tg">Végétation <input type="checkbox" id="veg" checked></label>
-  <label class="tg">Noms de rues <input type="checkbox" id="streets" checked></label>
-  <label class="tg">Destinations <input type="checkbox" id="dests"></label>
-  <button id="home">Recentrer la vue</button>
+  <div class="hd" id="uiHd"><b>Résidence Henri Clérisse</b><div class="sub">Bretteville-sur-Odon · 30 logements</div></div>
+  <div class="scroll">
+    <div class="sec">Étages</div>
+    <div id="levels"></div>
+    <div id="lots"></div>
+    <div class="sec">Couleurs des lots</div>
+    <div class="seg" id="mode"><button data-m="type" class="on">Typologie</button><button data-m="dispo">Disponibilité</button></div>
+    <div class="legend" id="legend"></div>
+    <div class="note" id="note"></div>
+    <details class="aff"><summary>Affichage</summary>
+      <label class="tg">Végétation <input type="checkbox" id="veg" checked></label>
+      <label class="tg">Noms de rues <input type="checkbox" id="streets" checked></label>
+      <label class="tg">Destinations <input type="checkbox" id="dests"></label>
+      <button id="home">Recentrer la vue</button>
+    </details>
+  </div>
 </div>
+<div id="card"></div>
+<div id="plan"><div class="bar"><b id="planT"></b><button id="pzout" aria-label="Dézoomer">−</button><button id="pzin" aria-label="Zoomer">+</button><button id="pfit">Ajuster</button><a id="pdl" download>Télécharger le PDF</a><button id="pclose" aria-label="Fermer">✕</button></div><div id="pstage"><img id="pimg" alt=""></div></div>
 <div id="hint">Glisser pour tourner · molette ou pincer pour zoomer · clic droit ou deux doigts pour déplacer</div>
 <img id="shot" alt="">
 <div id="tour">
@@ -171,12 +242,15 @@ const LIB = {   // couleur, rugosité, métal, texture, taille du motif (m)
   verre:        { c: 0x6f93a8, r: 0.03, m: 0 },
 };
 const mats = new Map();
-const rampMat = new THREE.MeshStandardMaterial({ color: 0x6e737a, roughness: 0.9, flatShading: true });
+const cutPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4);   // coupe horizontale par étage (garde y <= constante)
+renderer.localClippingEnabled = true;
+const clip = (m) => Object.assign(m, { clippingPlanes: [cutPlane], clipShadows: true });
+const rampMat = clip(new THREE.MeshStandardMaterial({ color: 0x6e737a, roughness: 0.9, flatShading: true }));
 function makeMat(name) {
   if (mats.has(name)) return mats.get(name);
   const top = name.endsWith('@top');                // toiture : dessinée devant les murs/dalles de l'attique qui affleurent son plan
   const d = LIB[name.replace('@top', '')] ?? LIB.divers;
-  const mat = new THREE.MeshStandardMaterial({ color: d.c, roughness: d.r, metalness: d.m, flatShading: true });
+  const mat = clip(new THREE.MeshStandardMaterial({ color: d.c, roughness: d.r, metalness: d.m, flatShading: true }));
   mat.envMapIntensity = name === 'verre' ? 2.2 : d.m > 0.1 ? 0.9 : 0.5;
   if (name === 'verre') Object.assign(mat, { transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide });
   else Object.assign(mat, { polygonOffset: true, polygonOffsetFactor: top ? -1 : 1, polygonOffsetUnits: top ? -6 : 1 });
@@ -200,11 +274,16 @@ function makeMat(name) {
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
 const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
-const V = '?v=2.5';                           // version des données : évite de mélanger avec un ancien fichier en cache
-const [bat, world, env] = await Promise.all([
-  gltf.loadAsync('bso.glb' + V), gltf.loadAsync('world.glb' + V), fetch('env.json' + V).then((r) => r.json()),
+const V = '?v=2.6';                           // version des données : évite de mélanger avec un ancien fichier en cache
+const getJSON = (u, o) => fetch(u, o).then((r) => r.json());
+const [bat, world, env, storeys, caps, lotsGeo, lotsDispo] = await Promise.all([
+  gltf.loadAsync('bso.glb' + V), gltf.loadAsync('world.glb' + V), getJSON('env.json' + V),
+  getJSON('storeys.json' + V), getJSON('caps.json' + V), getJSON('lots-geo.json' + V),
+  getJSON('lots.json', { cache: 'no-store' }).catch(() => ({ lots: {} })),      // disponibilités : fichier mis à jour par le futur back-office
 ]).catch((e) => { $('load').textContent = 'Erreur de chargement : ' + e.message; throw e; });
 const GY = env.GY;
+const levelsY = Object.fromEntries(storeys.map((s) => [s.name, s.y]));
+const bItems = [];                                  // éléments du bâtiment avec leur niveau (pour la coupe par étage)
 
 bat.scene.traverse((o) => {
   if (!o.isMesh) return;
@@ -213,6 +292,7 @@ bat.scene.traverse((o) => {
   const glass = o.material.name === 'verre';
   o.material = name === 'SOUS SOL|escalier' ? rampMat : makeMat(o.material.name + (name === 'TOITURE|toit' ? '@top' : ''));   // rampe du parking souterrain : enrobé sombre
   o.castShadow = !glass; o.receiveShadow = true;
+  bItems.push({ obj: o, level: name.split('|')[0] });
 });
 scene.add(bat.scene);
 { // murs / dalles de l'attique qui percent la toiture de quelques cm (défaut de la maquette IFC) : sommets ramenés juste sous le toit
@@ -439,7 +519,7 @@ function release(keepTarget) {    // rend la main : l'orbite reprend autour d'un
   requestAnimationFrame(step);
 }
 async function runTour(list, goHome) {
-  stopTour(); tour = {}; const tk = tour;
+  stopTour(); if (level !== 'all') setLevel('all', false); showCard(null); tour = {}; const tk = tour;
   tourEl.classList.remove('open'); tourEl.classList.add('on'); document.body.classList.add('touring'); controls.enabled = false;
   list.forEach((s) => (new Image().src = s.img));          // préchargement des images
   try {
@@ -463,6 +543,253 @@ renderer.domElement.addEventListener('pointerdown', stopTour);
 renderer.domElement.addEventListener('wheel', stopTour, { passive: true });
 addEventListener('keydown', (e) => e.key === 'Escape' && stopTour());
 
+/* ---------- étages : coupe horizontale + sections pleines (calculées hors ligne, caps.json) ---------- */
+const ORDER = ['SOUS SOL', 'RDC', 'R+1', 'R+2', 'R+3', 'TOITURE'];
+const LEVELS = [
+  { k: 'all', name: 'Bâtiment', sub: 'vue complète' },
+  { k: 'R+3', name: 'R+3', sub: 'Étage 3 · combles', cap: 'r3' },
+  { k: 'R+2', name: 'R+2', sub: 'Étage 2', cap: 'r2' },
+  { k: 'R+1', name: 'R+1', sub: 'Étage 1', cap: 'r1' },
+  { k: 'RDC', name: 'RDC', sub: 'Rez-de-chaussée', cap: 'rdc' },
+];
+const LVNAME = { RDC: 'Rez-de-chaussée', 'R+1': 'Étage 1', 'R+2': 'Étage 2', 'R+3': 'Étage 3 (combles)' };
+const CUT_H = 2.0;                                   // hauteur de coupe au-dessus du sol de l'étage (comme une coupe en plan)
+const capMeshes = {};
+{
+  const mat = new THREE.MeshBasicMaterial({ color: 0x2b3038, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+  for (const [k, c] of Object.entries(caps)) {
+    const geos = c.polys.map((o) => {
+      const sh = new THREE.Shape(o.ring.map(([x, z]) => new THREE.Vector2(x, -z)));
+      o.holes.forEach((h) => sh.holes.push(new THREE.Path(h.map(([x, z]) => new THREE.Vector2(x, -z)))));
+      return new THREE.ShapeGeometry(sh).rotateX(-Math.PI / 2);
+    });
+    if (!geos.length) continue;
+    const m = new THREE.Mesh(mergeGeometries(geos), mat); m.position.y = c.y - 0.004; m.visible = false; scene.add(m); capMeshes[k] = m;
+  }
+}
+
+/* ---------- lots : couleurs par typologie ou par disponibilité ---------- */
+const TYPE_COL = { T1: 0xe0b100, T2: 0x22a6b3, T3: 0x6a5ae0, T4: 0xf0962e, T5: 0xd94f8a };
+const DISPO = { disponible: { c: 0x22a35a, t: 'Disponible' }, option: { c: 0xf08c1a, t: 'Optionné' }, vendu: { c: 0xd93a3a, t: 'Vendu' } };
+const hexc = (c) => '#' + c.toString(16).padStart(6, '0');
+const statusOf = (a) => (DISPO[lotsDispo.lots?.[a.lot]?.statut] ? lotsDispo.lots[a.lot].statut : 'disponible');
+let colorMode = 'type', level = 'all', hoverLot = null, selLot = null;
+const lotCol = (a) => (colorMode === 'type' ? TYPE_COL[a.type] ?? 0x64748b : DISPO[statusOf(a)].c);
+const CARD = ['Nord', 'Nord-Est', 'Est', 'Sud-Est', 'Sud', 'Sud-Ouest', 'Ouest', 'Nord-Ouest'];
+const cardinal = (az) => CARD[Math.round((((az % 360) + 360) % 360) / 45) % 8];
+const m2 = (v) => v.toFixed(2).replace('.', ',') + ' m²';
+const LOTS = Object.values(lotsGeo).sort((a, b) => ORDER.indexOf(b.level) - ORDER.indexOf(a.level) || a.lot.localeCompare(b.lot));
+const lotZones = new THREE.Group(); lotZones.visible = false; scene.add(lotZones);
+const zoneMeshes = [];
+for (const a of LOTS) {
+  const y = levelsY[a.level] + 0.06, t = a.tris, pos = new Float32Array((t.length / 2) * 3);
+  for (let i = 0, j = 0; i < t.length; i += 2, j += 3) { pos[j] = t[i]; pos[j + 1] = y; pos[j + 2] = t[i + 1]; }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  a.mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+  a.mesh.userData.lot = a; a.mesh.renderOrder = 5;
+  const cnt = new Map(), q = (i) => Math.round(t[i] * 1000) + ',' + Math.round(t[i + 1] * 1000);   // contour = arêtes non partagées
+  for (let i = 0; i < t.length; i += 6) for (let k = 0; k < 3; k++) {
+    const p = i + k * 2, r = i + ((k + 1) % 3) * 2, key = [q(p), q(r)].sort().join('|');
+    const e = cnt.get(key); if (e) e.n++; else cnt.set(key, { n: 1, p, r });
+  }
+  const seg = []; for (const e of cnt.values()) if (e.n === 1) seg.push(t[e.p], y + 0.01, t[e.p + 1], t[e.r], y + 0.01, t[e.r + 1]);
+  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(seg, 3));
+  a.line = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ depthWrite: false, transparent: true })); a.line.renderOrder = 6;
+  lotZones.add(a.mesh, a.line); zoneMeshes.push(a.mesh);
+  a.center = new THREE.Box3().setFromBufferAttribute(geo.attributes.position).getCenter(new THREE.Vector3()).setY(y + 0.4);
+  a.lbl = document.createElement('div'); a.lbl.className = 'lbl'; a.lbl.textContent = a.lot; a.lbl.style.display = 'none'; document.body.append(a.lbl);
+}
+const inLevel = (a) => level !== 'all' && a.level === level;
+function paintLots() {
+  for (const a of LOTS) {
+    const col = lotCol(a), on = inLevel(a);
+    a.mesh.visible = a.line.visible = on;
+    a.mesh.material.color.setHex(col); a.line.material.color.setHex(col);
+    a.mesh.material.opacity = a === selLot ? 0.72 : a === hoverLot ? 0.55 : 0.3;
+    a.line.material.opacity = a === selLot || a === hoverLot ? 1 : 0.8;
+    a.lbl.style.background = hexc(col); a.lbl.classList.toggle('hov', a === hoverLot || a === selLot);
+    a.row?.classList.toggle('hov', a === hoverLot); a.row?.classList.toggle('sel', a === selLot);
+    if (a.row) a.row.querySelector('i').style.background = hexc(col);
+  }
+  dirty = Math.max(dirty, 2);
+}
+function placeLots() {
+  for (const a of LOTS) {
+    if (!inLevel(a)) { a.lbl.style.display = 'none'; continue; }
+    v3.copy(a.center).project(camera);
+    const vis = v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05;
+    a.lbl.style.display = vis ? '' : 'none';
+    if (vis) a.lbl.style.transform = `translate(${(v3.x * 0.5 + 0.5) * innerWidth}px,${(-v3.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-50%)`;
+  }
+}
+
+/* ---------- panneau : étages, liste des lots, mode de couleurs ---------- */
+const countOf = (k) => LOTS.filter((a) => k === 'all' || a.level === k).length;
+$('levels').innerHTML = LEVELS.map((l) => `<button class="lv" data-k="${l.k}"><b>${l.name}</b><span>· ${l.sub}</span><em>${countOf(l.k)} lots</em></button>`).join('');
+$('levels').onclick = (e) => { const b = e.target.closest('.lv'); if (b) setLevel(b.dataset.k); };
+function renderLots() {
+  const list = LOTS.filter((a) => level === 'all' || a.level === level);
+  let html = '', grp = null;
+  for (const a of list) {
+    if (level === 'all' && a.level !== grp) { grp = a.level; html += `<div class="grp">${grp} · ${LVNAME[grp]}</div>`; }
+    const st = statusOf(a);
+    html += `<button class="lot" data-l="${a.lot}"><i></i><b>${a.lot} · ${a.type}</b><strong>${m2(a.hab)}<u style="color:${hexc(DISPO[st].c)}">${DISPO[st].t}</u></strong>`
+      + `<small>${a.ext ? `${a.extName} ${m2(a.ext)}` : 'Sans extérieur'}</small></button>`;
+  }
+  $('lots').innerHTML = html;
+  for (const a of LOTS) a.row = $('lots').querySelector(`[data-l="${a.lot}"]`);
+  paintLots();
+}
+$('lots').onclick = (e) => { const b = e.target.closest('.lot'); if (b) selectLot(lotsGeo[b.dataset.l]); };
+$('lots').onmouseover = (e) => { const b = e.target.closest('.lot'); setHover(b ? lotsGeo[b.dataset.l] : null); };
+$('lots').onmouseleave = () => setHover(null);
+function renderLegend() {
+  const items = colorMode === 'type'
+    ? [...new Set(LOTS.map((a) => a.type))].sort().map((t) => [TYPE_COL[t], t, LOTS.filter((a) => a.type === t).length])
+    : Object.entries(DISPO).map(([k, d]) => [d.c, d.t, LOTS.filter((a) => statusOf(a) === k).length]);
+  $('legend').innerHTML = items.map(([c, t, n]) => `<span><i style="background:${hexc(c)}"></i>${t} (${n})</span>`).join('');
+}
+$('mode').onclick = (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  colorMode = b.dataset.m; $('mode').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+  renderLegend(); paintLots(); if (selLot) showCard(selLot);
+};
+$('uiHd').onclick = () => mobile && $('ui').classList.toggle('min');
+function setHover(a) { if (a === hoverLot) return; hoverLot = a; renderer.domElement.style.cursor = a ? 'pointer' : ''; paintLots(); }
+
+let camTween = 0;
+function flyTo(pos, tgt, ms = 1000) {               // transition douce de la caméra (annulée si l'utilisateur reprend la main)
+  const p0 = camera.position.clone(), t0 = controls.target.clone(), s = performance.now(), id = ++camTween;
+  const step = (now) => {
+    if (id !== camTween) return;
+    const e = ease(Math.min((now - s) / ms, 1));
+    camera.position.lerpVectors(p0, pos, e); controls.target.lerpVectors(t0, tgt, e); dirty = 2;
+    if (e < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+renderer.domElement.addEventListener('pointerdown', () => camTween++);
+renderer.domElement.addEventListener('wheel', () => camTween++, { passive: true });
+function setLevel(k, fly = true) {
+  const L = LEVELS.find((l) => l.k === k); if (!L) return;
+  if (k !== level && tour && fly) stopTour();
+  level = k;
+  const hide = k === 'all' ? [] : ORDER.slice(ORDER.indexOf(k) + 1);
+  for (const it of bItems) it.obj.visible = !hide.includes(it.level);
+  cutPlane.constant = k === 'all' ? 1e4 : levelsY[k] + CUT_H;
+  for (const [ck, m] of Object.entries(capMeshes)) m.visible = ck === L.cap;
+  lotZones.visible = k !== 'all';
+  if (k !== 'all' || vegA < 1) vegFade(k === 'all' ? 1 : 0);   // les arbres du jardin masqueraient les plans d'étage
+  $('levels').querySelectorAll('.lv').forEach((b) => b.classList.toggle('on', b.dataset.k === k));
+  $('note').textContent = k === 'all' ? 'Choisissez un étage pour voir ses lots, ou cliquez un lot de la liste.' : 'Survolez un lot pour le repérer ; cliquez (ici ou sur la maquette) pour sa fiche.';
+  if (selLot && selLot.level !== k) showCard(null);
+  hoverLot = null; renderLots(); shadowDirty = true; dirty = 3;
+  if (!fly) return;
+  if (k === 'all') { flyTo(homePos(), HOME.tgt); return; }
+  // vue plongeante sur l'étage, en gardant l'orientation actuelle autour du bâtiment
+  const tgt = new THREE.Vector3(ctr.x, levelsY[k], ctr.z), az = Math.atan2(camera.position.x - ctr.x, camera.position.z - ctr.z);
+  const dist = R * (innerWidth / innerHeight < 0.8 ? 2.6 : 1.75), el = THREE.MathUtils.degToRad(58);
+  const pos = new THREE.Vector3(tgt.x + Math.sin(az) * Math.cos(el) * dist, tgt.y + Math.sin(el) * dist, tgt.z + Math.cos(az) * Math.cos(el) * dist);
+  if (!mobile) {   // décale le cadrage vers la droite pour que le panneau de gauche ne masque pas l'étage
+    const right = new THREE.Vector3().subVectors(tgt, pos).cross(camera.up).normalize();
+    const shift = -(330 / innerWidth) * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
+    pos.addScaledVector(right, shift); tgt.addScaledVector(right, shift);
+  }
+  flyTo(pos, tgt);
+}
+
+/* ---------- fiche du lot ---------- */
+function selectLot(a) {
+  if (!a) return showCard(null);
+  if (a.level !== level) setLevel(a.level);
+  showCard(a);
+}
+function showCard(a) {
+  selLot = a; paintLots();
+  const card = $('card');
+  if (!a) { card.style.display = 'none'; return; }
+  const st = statusOf(a), ext = a.rooms.filter((r) => /^(Loggia|Balcon|Terrasse|Jardin)/i.test(r.name));
+  card.innerHTML = `<button class="x" aria-label="Fermer">×</button>
+    <h2>Lot ${a.lot}</h2>
+    <div class="tags"><span class="tag" style="background:${hexc(TYPE_COL[a.type] ?? 0x64748b)}">${a.type}</span><span class="tag" style="background:${hexc(DISPO[st].c)}">${DISPO[st].t}</span><span class="tag l">${a.level} · ${LVNAME[a.level]}</span></div>
+    <div class="big"><div><b>${m2(a.hab)}</b><span>surface habitable</span></div>${a.ext ? `<div><b>${m2(a.ext)}</b><span>${a.extName.toLowerCase()}</span></div>` : ''}</div>
+    <table>${a.rooms.map((r) => `<tr class="${ext.includes(r) ? 'out' : ''}"><td>${r.name}</td><td>${m2(r.area)}</td></tr>`).join('')}
+      <tr><td>Orientation principale</td><td>${cardinal(a.az)}</td></tr></table>
+    <img class="pl" src="plans/${a.lot}-mini.jpg" alt="Plan de vente du lot ${a.lot}">
+    <div class="row"><button class="btn" id="openPlan">Agrandir le plan</button><a class="btn ghost" href="plans/${a.lot}.pdf" download="Plan-de-vente-${a.lot}.pdf">Télécharger le PDF</a></div>
+    <div class="fine">Plan de vente indice 3 du 24/09/2026. Surfaces indicatives, non contractuelles.</div>`;
+  card.style.display = 'block'; card.scrollTop = 0;
+  if (mobile) $('ui').classList.add('min');          // petit écran : le panneau se replie pour laisser voir la maquette et la fiche
+  card.querySelector('.x').onclick = () => showCard(null);
+  card.querySelector('#openPlan').onclick = card.querySelector('.pl').onclick = () => openPlan(a);
+  a.row?.scrollIntoView({ block: 'nearest' });
+}
+
+/* ---------- plan de vente plein écran : molette / pincer pour zoomer, glisser pour déplacer ---------- */
+const PZ = { s: 1, x: 0, y: 0, fit: 1 };
+const planApply = () => ($('pimg').style.transform = `translate(${PZ.x}px,${PZ.y}px) scale(${PZ.s})`);
+function planFit() {
+  const st = $('pstage'), im = $('pimg'); if (!im.naturalWidth) return;
+  PZ.fit = PZ.s = Math.min(st.clientWidth / im.naturalWidth, st.clientHeight / im.naturalHeight);
+  PZ.x = (st.clientWidth - im.naturalWidth * PZ.s) / 2; PZ.y = (st.clientHeight - im.naturalHeight * PZ.s) / 2; planApply();
+}
+function planZoom(f, cx, cy) {
+  const st = $('pstage'); cx ??= st.clientWidth / 2; cy ??= st.clientHeight / 2;
+  const ns = Math.min(PZ.fit * 10, Math.max(PZ.fit * 0.8, PZ.s * f));
+  PZ.x = cx - (cx - PZ.x) * (ns / PZ.s); PZ.y = cy - (cy - PZ.y) * (ns / PZ.s); PZ.s = ns; planApply();
+}
+function openPlan(a) {
+  $('planT').textContent = `Plan de vente · Lot ${a.lot} · ${a.type} · ${a.level}`;
+  $('pdl').href = `plans/${a.lot}.pdf`; $('pdl').download = `Plan-de-vente-${a.lot}.pdf`;
+  $('plan').style.display = 'flex';
+  const im = $('pimg'); im.onload = planFit; im.src = `plans/${a.lot}.jpg`; if (im.complete) planFit();
+}
+const closePlan = () => ($('plan').style.display = 'none');
+$('pclose').onclick = closePlan; $('pfit').onclick = planFit;
+$('pzin').onclick = () => planZoom(1.4); $('pzout').onclick = () => planZoom(1 / 1.4);
+addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if ($('plan').style.display === 'flex') closePlan(); else showCard(null); });
+addEventListener('resize', () => $('plan').style.display === 'flex' && planFit());
+{
+  const st = $('pstage'), pts = new Map(); let last = null;
+  st.addEventListener('wheel', (e) => { e.preventDefault(); const r = st.getBoundingClientRect(); planZoom(e.deltaY < 0 ? 1.18 : 1 / 1.18, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  st.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, [e.clientX, e.clientY]); st.setPointerCapture(e.pointerId); st.classList.add('drag'); last = null; });
+  st.addEventListener('pointermove', (e) => {
+    if (!pts.has(e.pointerId)) return;
+    const prev = pts.get(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pts.size === 1) { PZ.x += e.clientX - prev[0]; PZ.y += e.clientY - prev[1]; planApply(); return; }
+    const [p, q] = [...pts.values()], d = Math.hypot(p[0] - q[0], p[1] - q[1]), r = st.getBoundingClientRect();   // pincer
+    if (last) planZoom(d / last, (p[0] + q[0]) / 2 - r.left, (p[1] + q[1]) / 2 - r.top);
+    last = d;
+  });
+  const up = (e) => { pts.delete(e.pointerId); last = null; if (!pts.size) st.classList.remove('drag'); };
+  st.addEventListener('pointerup', up); st.addEventListener('pointercancel', up);
+  st.addEventListener('dblclick', (e) => { const r = st.getBoundingClientRect(); PZ.s > PZ.fit * 1.05 ? planFit() : planZoom(2.6, e.clientX - r.left, e.clientY - r.top); });
+}
+
+/* ---------- survol et clic sur la maquette ---------- */
+{
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), cv = renderer.domElement;
+  const pick = (ev) => {
+    if (level === 'all') return null;
+    const r = cv.getBoundingClientRect(); ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    return ray.intersectObjects(zoneMeshes.filter((m) => m.visible), false)[0]?.object.userData.lot ?? null;
+  };
+  let down = null, lastMove = 0;
+  cv.addEventListener('pointerdown', (e) => (down = [e.clientX, e.clientY]));
+  cv.addEventListener('pointerup', (e) => {
+    if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5 || level === 'all') return;
+    const a = pick(e); a ? showCard(a) : showCard(null);
+  });
+  cv.addEventListener('pointermove', (e) => {
+    if (e.buttons || level === 'all' || performance.now() - lastMove < 40) return;
+    lastMove = performance.now(); setHover(pick(e));
+  });
+  cv.addEventListener('pointerleave', () => setHover(null));
+}
+renderLegend(); setLevel('all', false);
+if (mobile && innerHeight < 700) $('ui').classList.add('min');
+
 /* ---------- boucle : rendu seulement si quelque chose bouge ---------- */
 function resize() {
   renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; applyOffset(); dirty = 2;
@@ -478,9 +805,9 @@ renderer.setAnimationLoop(() => {
   if (Math.abs(near - camera.near) > camera.near * 0.2) { camera.near = near; camera.updateProjectionMatrix(); }
   if (shadowDirty) { renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
   dome.position.copy(camera.position);
-  renderer.render(scene, camera); if ($('streets').checked) updateOcclusion(); placeLabels();
+  renderer.render(scene, camera); if ($('streets').checked) updateOcclusion(); placeLabels(); placeLots();
 });
-window.__v2 = { camera, controls, ctr, R, scene, redraw: () => (dirty = 3), setHome: (p, t) => { camera.position.set(...p); controls.target.set(...t); dirty = 3; } };   // réglage du cadrage (débogage)
+window.__v2 = { setLevel, selectLot, camera, controls, ctr, R, scene, redraw: () => (dirty = 3), setHome: (p, t) => { camera.position.set(...p); controls.target.set(...t); dirty = 3; } };   // réglage du cadrage (débogage)
 $('load').style.opacity = 0; setTimeout(() => $('load').remove(), 500);
 setTimeout(() => ($('hint').style.opacity = 0), 7000);
 </script>

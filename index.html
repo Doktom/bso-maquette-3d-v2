@@ -582,7 +582,8 @@ const LOTS = Object.values(lotsGeo).sort((a, b) => ORDER.indexOf(b.level) - ORDE
 const lotZones = new THREE.Group(); lotZones.visible = false; scene.add(lotZones);
 const zoneMeshes = [];
 for (const a of LOTS) {
-  const y = levelsY[a.level] + 0.06, t = a.tris, pos = new Float32Array((t.length / 2) * 3);
+  const y = levelsY[a.level] + CUT_H - 0.03,   // plaque à l'arase des murs coupés, juste sous les sections sombres
+  t = a.tris, pos = new Float32Array((t.length / 2) * 3);
   for (let i = 0, j = 0; i < t.length; i += 2, j += 3) { pos[j] = t[i]; pos[j + 1] = y; pos[j + 2] = t[i + 1]; }
   const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   a.mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
@@ -596,7 +597,7 @@ for (const a of LOTS) {
   const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(seg, 3));
   a.line = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ depthWrite: false, transparent: true })); a.line.renderOrder = 6;
   lotZones.add(a.mesh, a.line); zoneMeshes.push(a.mesh);
-  a.center = new THREE.Box3().setFromBufferAttribute(geo.attributes.position).getCenter(new THREE.Vector3()).setY(y + 0.4);
+  a.center = new THREE.Box3().setFromBufferAttribute(geo.attributes.position).getCenter(new THREE.Vector3()).setY(y + 0.15);
   a.lbl = document.createElement('div'); a.lbl.className = 'lbl'; a.lbl.textContent = a.lot; a.lbl.style.display = 'none'; document.body.append(a.lbl);
 }
 const inLevel = (a) => level !== 'all' && a.level === level;
@@ -605,7 +606,7 @@ function paintLots() {
     const col = lotCol(a), on = inLevel(a);
     a.mesh.visible = a.line.visible = on;
     a.mesh.material.color.setHex(col); a.line.material.color.setHex(col);
-    a.mesh.material.opacity = a === selLot ? 0.72 : a === hoverLot ? 0.55 : 0.3;
+    a.mesh.material.opacity = a === selLot ? 0.82 : a === hoverLot ? 0.7 : 0.45;
     a.line.material.opacity = a === selLot || a === hoverLot ? 1 : 0.8;
     a.lbl.style.background = hexc(col); a.lbl.classList.toggle('hov', a === hoverLot || a === selLot);
     a.row?.classList.toggle('hov', a === hoverLot); a.row?.classList.toggle('sel', a === selLot);

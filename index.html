@@ -174,11 +174,12 @@ const mats = new Map();
 const rampMat = new THREE.MeshStandardMaterial({ color: 0x6e737a, roughness: 0.9, flatShading: true });
 function makeMat(name) {
   if (mats.has(name)) return mats.get(name);
-  const d = LIB[name] ?? LIB.divers;
+  const top = name.endsWith('@top');                // toiture : dessinée devant les murs/dalles de l'attique qui affleurent son plan
+  const d = LIB[name.replace('@top', '')] ?? LIB.divers;
   const mat = new THREE.MeshStandardMaterial({ color: d.c, roughness: d.r, metalness: d.m, flatShading: true });
   mat.envMapIntensity = name === 'verre' ? 2.2 : d.m > 0.1 ? 0.9 : 0.5;
   if (name === 'verre') Object.assign(mat, { transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide });
-  else Object.assign(mat, { polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+  else Object.assign(mat, { polygonOffset: true, polygonOffsetFactor: top ? -1 : 1, polygonOffsetUnits: top ? -6 : 1 });
   if (d.t) {
     const tex = d.t();
     mat.onBeforeCompile = (sh) => {   // texture « triplanaire » en coordonnées monde (le modèle n'a pas d'UV)
@@ -210,10 +211,27 @@ bat.scene.traverse((o) => {
   const name = o.userData.name || o.name, cat = name.split('|')[1];
   if (cat === 'plafond') { o.visible = false; return; }            // faux plafonds : invisibles de l'extérieur
   const glass = o.material.name === 'verre';
-  o.material = name === 'SOUS SOL|escalier' ? rampMat : makeMat(o.material.name);   // rampe du parking souterrain : enrobé sombre
+  o.material = name === 'SOUS SOL|escalier' ? rampMat : makeMat(o.material.name + (name === 'TOITURE|toit' ? '@top' : ''));   // rampe du parking souterrain : enrobé sombre
   o.castShadow = !glass; o.receiveShadow = true;
 });
 scene.add(bat.scene);
+{ // murs / dalles de l'attique qui percent la toiture de quelques cm (défaut de la maquette IFC) : sommets ramenés juste sous le toit
+  bat.scene.updateMatrixWorld(true);
+  const roof = bat.scene.getObjectByName('TOITURE|toit'), rc = new THREE.Raycaster(), p = new THREE.Vector3(), inv = new THREE.Matrix4();
+  rc.ray.direction.set(0, -1, 0);
+  bat.scene.traverse((o) => {
+    if (!o.isMesh || o === roof || !/^(R\+2|R\+3|HORS-NIVEAU)\|(mur|dalle|divers|structure)/.test(o.name)) return;
+    const pos = o.geometry.attributes.position; inv.copy(o.matrixWorld).invert(); let n = 0;
+    for (let i = 0; i < pos.count; i++) {
+      p.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+      if (p.y < 13 || p.y > 17.5) continue;
+      rc.ray.origin.set(p.x, 30, p.z); const h = rc.intersectObject(roof, false)[0];
+      if (!h || p.y < h.point.y - 0.02 || p.y > h.point.y + 0.25) continue;   // pignons, lucarnes : bien au-dessus du toit, inchangés
+      p.y = h.point.y - 0.04; p.applyMatrix4(inv); pos.setXYZ(i, p.x, p.y, p.z); n++;
+    }
+    if (n) { pos.needsUpdate = true; o.geometry.computeBoundingSphere(); }
+  });
+}
 
 /* ---------- environnement plat « clay » : sol blanc, voirie en couches à ordre de dessin fixe (aucun scintillement) ---------- */
 const ground = new THREE.Mesh(new THREE.CircleGeometry(2500, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 1 }));

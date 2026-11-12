@@ -28,11 +28,10 @@
 
   /* panneau étages + lots */
   #ui{position:fixed;top:14px;right:14px;z-index:10;width:318px;max-height:calc(100vh - 150px);display:flex;flex-direction:column;overflow:hidden}
-  #uiHd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 6px}
+  #uiHd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px 6px 16px}
   .sec{font:400 13px/1 "Ubuntu Condensed",Ubuntu,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
   .sec::before{content:"";display:inline-block;width:3px;height:11px;background:var(--red);margin-right:7px;vertical-align:-1px}
   #ui .scroll{overflow:auto;padding:4px 12px 12px;min-height:0}
-  #uiTog{display:none;margin-left:auto;margin-right:6px}
   #levels{display:flex;flex-direction:column;gap:5px}
   .lv{display:flex;align-items:center;gap:7px;width:100%;padding:9px 12px;text-align:left;border-radius:10px;background:var(--soft);transition:background .15s}
   .lv b{font-weight:700;min-width:44px} .lv span{color:var(--mute);font-size:12.5px;flex:1}
@@ -121,20 +120,59 @@
   #lotInfo tr.tot td{font-weight:700;border-bottom:2px solid var(--navy)}
   #lotInfo .fine{font-size:11.5px;color:var(--mute);margin-top:12px}
 
+  /* liste des lots : recherche + filtres */
+  #bList{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:9px;background:var(--navy);color:#fff;font-size:12px;font-weight:700}
+  #bList svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round}
+  #bList:hover{background:var(--blue)}
+  .empty{font-size:12.5px;color:var(--mute);padding:10px 6px 2px}
+  #listModal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(0,22,46,.45);backdrop-filter:blur(3px);padding:24px}
+  #listModal.open{display:flex}
+  #listModal .win{width:min(1180px,100%);height:min(760px,100%);display:flex;flex-direction:column;overflow:hidden}
+  #listModal header{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 18px;border-bottom:1px solid var(--line)}
+  #listModal header h2{margin:0;font:400 22px/1 "Ubuntu Condensed",Ubuntu,sans-serif;text-transform:uppercase;letter-spacing:.03em}
+  #lCount{flex:1;font-weight:700;color:var(--red)}
+  #lClose{padding:8px 12px;border-radius:9px;background:var(--navy);color:#fff;font-size:13px;font-weight:500}
+  #listModal .lbody{flex:1;display:flex;min-height:0}
+  #lFilt{width:280px;flex:none;overflow:auto;padding:14px 16px;background:#fafbfc;border-right:1px solid var(--line)}
+  #lQ{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+  #lQ:focus{outline:2px solid var(--navy);border-color:transparent}
+  .fg{margin-top:14px} .fg .sec{display:block;margin-bottom:7px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:16px;background:#fff;border:1px solid var(--line);font-size:12.5px}
+  .chip i{width:9px;height:9px;border-radius:3px} .chip em{font-style:normal;font-size:11px;color:var(--mute)}
+  .chip.on{background:var(--navy);border-color:var(--navy);color:#fff} .chip.on em{color:rgba(255,255,255,.7)}
+  .rng{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mute)}
+  .rng input{width:72px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;color:var(--ink);background:#fff}
+  #lReset{margin-top:18px;padding:7px 12px;border-radius:9px;border:1px solid var(--line);font-size:12.5px;background:#fff} #lReset:hover{border-color:var(--navy)}
+  .ltab{flex:1;overflow:auto;min-width:0}
+  .ltab table{width:100%;border-collapse:collapse;font-size:13px}
+  .ltab th{position:sticky;top:0;z-index:1;background:#fff;text-align:left;font:400 12.5px/1 "Ubuntu Condensed",Ubuntu,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:12px 12px 10px;border-bottom:2px solid var(--navy);cursor:pointer;white-space:nowrap;user-select:none}
+  .ltab th.asc::after{content:" \25B4";color:var(--red)} .ltab th.desc::after{content:" \25BE";color:var(--red)}
+  .ltab td{padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .ltab tbody tr{cursor:pointer} .ltab tbody tr:hover{background:var(--soft)}
+  .ltab td b{font-weight:700} .ltab .ty{display:inline-block;font-size:11.5px;font-weight:700;color:#fff;padding:2px 8px;border-radius:6px}
+  .ltab .st{display:inline-flex;align-items:center;gap:6px;font-weight:500} .ltab .st i{width:8px;height:8px;border-radius:50%}
+  .ltab .none{padding:30px;text-align:center;color:var(--mute)}
+  #tools>#bTour{display:none}
   #load{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#f3f4f5;color:var(--mute);transition:opacity .5s}
   #load div{width:220px;text-align:center} #load img{height:64px;display:block;margin:0 auto 14px;border-radius:8px}
   #load i{display:block;height:3px;margin-top:10px;border-radius:2px;background:linear-gradient(90deg,var(--red) var(--p,0%),rgba(0,0,0,.08) 0)}
 
   @media (max-width:760px){
     #brand{top:8px;left:8px;max-width:calc(100vw - 16px)} #brand img{height:50px} #brand .t{padding:6px 12px} #brand h1{font-size:17px} #brand .ad{display:none}
-    #ui{top:auto;right:8px;left:8px;width:auto;bottom:calc(112px + env(safe-area-inset-bottom));max-height:40vh}
-    #uiHd{padding:8px 12px 4px;cursor:pointer} #uiTog{display:inline} #uiHd::after{content:"\25BE";color:var(--mute)} #ui.min #uiHd::after{content:"\25B4"} #ui.min #lots,#ui.min .foot{display:none}
+    #ui{top:auto;right:8px;left:8px;width:auto;max-height:46vh}
+    #uiHd{padding:8px 12px 4px;cursor:pointer} #uiHd::after{content:"\25BE";color:var(--mute)} #ui.min #uiHd::after{content:"\25B4"} #ui.min #lots,#ui.min .foot{display:none}
     #levels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px} .lv{flex-direction:column;gap:1px;padding:6px 2px;justify-content:center;text-align:center} .lv b{min-width:0} .lv span{display:none} .lv em{font-size:10px;padding:1px 6px}
     #ui .foot{padding:6px 12px 8px}
     #dock{left:8px;right:8px;transform:none;max-width:none;padding:6px;bottom:calc(8px + env(safe-area-inset-bottom))}
     #tourGo{width:62px;font-size:11px} #home{width:56px;font-size:10.5px} .shot{width:104px} .shot img{height:52px}
     #tools{top:66px;bottom:auto;right:8px;flex-direction:column} #setPop{top:66px;bottom:auto;right:58px}
     #credit{display:none}
+    #listModal{padding:0} #listModal .win{height:100%;border-radius:0} #listModal .lbody{flex-direction:column;overflow:auto}
+    #lFilt{width:auto;border-right:0;border-bottom:1px solid var(--line);overflow:visible} .ltab{overflow:visible}
+    .ltab th:nth-child(5),.ltab td:nth-child(5),.ltab th:nth-child(6),.ltab td:nth-child(6){display:none} .ltab td,.ltab th{padding:9px 8px}
+    #dock{display:none} body.dockOn #dock,body.touring #dock{display:flex} #tools>#bTour{display:grid}
+    #ui{bottom:calc(8px + env(safe-area-inset-bottom))} body.dockOn #ui{bottom:calc(112px + env(safe-area-inset-bottom))}
     #lotModal{padding:0} #lotModal .win{height:100%;border-radius:0} #lotModal header{flex-wrap:wrap;padding:10px 12px;gap:8px} #lotModal header h2{font-size:18px;flex:1 1 70%} #lotModal header a,#lotModal header button{flex:1 1 40%;justify-content:center} #lotModal .ztools .hint{display:none}
     #lotModal .body{flex-direction:column;overflow:auto} #lotModal .planw{flex:none;height:52vh;padding:8px} #lotInfo{width:auto;border-left:0;border-top:1px solid var(--line);overflow:visible}
     #help{flex-direction:column;text-align:center}
@@ -145,7 +183,7 @@
 <canvas id="c"></canvas>
 <div id="brand" class="card"><img src="img/logo-sajac-r.png" alt="SAJAC Immobilier"><div class="t"><h1>Résidence Henri Clérisse</h1><div class="ad">135 route de Bretagne · Bretteville-sur-Odon</div><div id="ctx">30 logements · T2 à T4</div></div></div>
 <div id="ui" class="card">
-  <div id="uiHd"><span class="sec">Étages</span><span class="sec mob" id="uiTog">Lots</span></div>
+  <div id="uiHd"><span class="sec">Étages</span><button id="bList"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg>Rechercher un lot</button></div>
   <div class="scroll"><div id="levels"></div><div id="lots"></div></div>
   <div class="foot"><span class="sec">Couleurs des lots</span>
     <div class="seg" id="mode"><button data-m="type" class="on">Typologie</button><button data-m="dispo">Disponibilité</button></div>
@@ -158,6 +196,7 @@
   <div id="tourBar"><span id="tourLbl"></span><button id="tourStop">Quitter</button></div>
 </div>
 <div id="tools" class="card">
+  <button id="bTour" title="Visite guidée"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
   <button id="bSet" title="Affichage"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   <button id="bFull" title="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   <button id="bHelp" title="Aide"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h0"/></svg></button>
@@ -176,6 +215,21 @@
     <div class="planw"><div class="ztools"><span class="hint">Molette ou pincer pour zoomer · glisser pour déplacer</span><button id="pzout" aria-label="Dézoomer">−</button><button id="pzin" aria-label="Zoomer">+</button><button id="pfit" aria-label="Ajuster" style="width:auto;padding:0 10px">Ajuster</button></div>
       <div id="pstage"><img id="pimg" alt=""></div></div>
     <div id="lotInfo"></div>
+  </div>
+</div></div>
+<div id="listModal"><div class="win card">
+  <header><h2>Les lots</h2><span id="lCount"></span><button id="lClose">✕ Fermer</button></header>
+  <div class="lbody">
+    <aside id="lFilt">
+      <input id="lQ" type="search" placeholder="Rechercher : A203, T3, terrasse…" autocomplete="off">
+      <div class="fg"><span class="sec">Typologie</span><div class="chips" data-f="type"></div></div>
+      <div class="fg"><span class="sec">Étage</span><div class="chips" data-f="level"></div></div>
+      <div class="fg"><span class="sec">Disponibilité</span><div class="chips" data-f="statut"></div></div>
+      <div class="fg"><span class="sec">Surface habitable</span><div class="rng"><input type="number" id="lMin" inputmode="numeric"> à <input type="number" id="lMax" inputmode="numeric"> m²</div></div>
+      <div class="fg"><span class="sec">Extérieur</span><div class="chips" data-f="ext"></div></div>
+      <button id="lReset">Réinitialiser les filtres</button>
+    </aside>
+    <div class="ltab"><table><thead><tr><th data-s="lot">Lot</th><th data-s="level">Étage</th><th data-s="type">Type</th><th data-s="hab">Surface</th><th data-s="ext">Extérieur</th><th data-s="az">Orientation</th><th data-s="statut">Dispo.</th></tr></thead><tbody id="lBody"></tbody></table></div>
   </div>
 </div></div>
 <div id="load"><div><img src="img/logo-sajac.png" alt="">Chargement de la maquette…<i id="bar"></i></div></div>
@@ -305,7 +359,7 @@ function makeMat(name) {
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, a, b) => $('bar').style.setProperty('--p', Math.round((a / b) * 100) + '%');
 const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
-const V = '?v=2.7';                           // version des données : évite de mélanger avec un ancien fichier en cache
+const V = '?v=2.8';                           // version des données : évite de mélanger avec un ancien fichier en cache
 const getJSON = (u, o) => fetch(u, o).then((r) => r.json());
 const [bat, world, env, storeys, caps, lotsGeo, lotsDispo] = await Promise.all([
   gltf.loadAsync('bso.glb' + V), gltf.loadAsync('world.glb' + V), getJSON('env.json' + V),
@@ -559,7 +613,7 @@ async function runTour(list, goHome) {
   } catch (e) { if (e !== 'stop') throw e; }
   if (tour === tk) { tour = null; endTour(goHome); }
 }
-function endTour(keepTarget) { if (vegA < 1) vegFade(1); document.body.classList.remove('touring'); shotEl.style.opacity = 0; release(keepTarget); }
+function endTour(keepTarget) { if (vegA < 1) vegFade(1); document.body.classList.remove('dockOn'); document.body.classList.remove('touring'); shotEl.style.opacity = 0; release(keepTarget); }
 function stopTour() { if (!tour) return; tour = null; endTour(); }
 $('shots').innerHTML = SHOTS.map((s, i) => `<button class="shot" data-i="${i}" title="${s.sub}"><img src="${s.img.replace('.jpg', '-mini.jpg')}" alt=""><b>${s.name}</b></button>`).join('');
 $('shots').onclick = (e) => { const b = e.target.closest('.shot'); if (b) runTour([SHOTS[+b.dataset.i]], false); };
@@ -595,7 +649,7 @@ const capMeshes = {};
 }
 
 /* ---------- lots : couleurs par typologie ou par disponibilité ---------- */
-const TYPE_COL = { T1: 0xe0b100, T2: 0x22a6b3, T3: 0x6a5ae0, T4: 0xf0962e, T5: 0xd94f8a };
+const TYPE_COL = { T1: 0xe0b100, T2: 0x22a6b3, T3: 0x2f6fd6, T4: 0xf0962e, T5: 0xd94f8a };
 const DISPO = { disponible: { c: 0x22a35a, t: 'Disponible' }, option: { c: 0xf08c1a, t: 'Optionné' }, vendu: { c: 0xd93a3a, t: 'Vendu' } };
 const hexc = (c) => '#' + c.toString(16).padStart(6, '0');
 const statusOf = (a) => (DISPO[lotsDispo.lots?.[a.lot]?.statut] ? lotsDispo.lots[a.lot].statut : 'disponible');
@@ -655,10 +709,9 @@ const countOf = (k) => LOTS.filter((a) => k === 'all' || a.level === k).length;
 $('levels').innerHTML = LEVELS.map((l) => `<button class="lv" data-k="${l.k}"><b>${l.name}</b><span>· ${l.sub}</span><em>${countOf(l.k)} lots</em></button>`).join('');
 $('levels').onclick = (e) => { const b = e.target.closest('.lv'); if (b) setLevel(b.dataset.k); };
 function renderLots() {
-  const list = LOTS.filter((a) => level === 'all' || a.level === level);
-  let html = '', grp = null;
+  const list = LOTS.filter((a) => a.level === level);   // la liste n'apparaît que sous l'étage sélectionné
+  let html = level === 'all' ? '<div class="empty">Sélectionnez un étage pour afficher ses lots, ou utilisez la recherche.</div>' : '';
   for (const a of list) {
-    if (level === 'all' && a.level !== grp) { grp = a.level; html += `<div class="grp">${grp} · ${LVNAME[grp]}</div>`; }
     const st = statusOf(a);
     html += `<button class="lot" data-l="${a.lot}"><i></i><b>${a.lot} · ${a.type}</b><strong>${m2(a.hab)}<u style="color:${hexc(DISPO[st].c)}">${DISPO[st].t}</u></strong>`
       + `<small>${a.ext ? `${a.extName} ${m2(a.ext)}` : 'Sans extérieur'}</small></button>`;
@@ -681,7 +734,7 @@ $('mode').onclick = (e) => {
   colorMode = b.dataset.m; $('mode').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
   renderLegend(); paintLots(); if (selLot) showCard(selLot);
 };
-$('uiHd').onclick = () => mobile && $('ui').classList.toggle('min');
+$('uiHd').onclick = (e) => { if (mobile && !e.target.closest('#bList')) $('ui').classList.toggle('min'); };
 function setHover(a) { if (a === hoverLot) return; hoverLot = a; renderer.domElement.style.cursor = a ? 'pointer' : ''; paintLots(); }
 
 let camTween = 0;
@@ -717,19 +770,28 @@ function setLevel(k, fly = true) {
   const tgt = new THREE.Vector3(ctr.x, levelsY[k], ctr.z), az = Math.atan2(camera.position.x - ctr.x, camera.position.z - ctr.z);
   const dist = R * (innerWidth / innerHeight < 0.8 ? 2.6 : 1.75), el = THREE.MathUtils.degToRad(58);
   const pos = new THREE.Vector3(tgt.x + Math.sin(az) * Math.cos(el) * dist, tgt.y + Math.sin(el) * dist, tgt.z + Math.cos(az) * Math.cos(el) * dist);
-  if (!mobile) {   // décale le cadrage vers la gauche pour que le panneau de droite ne masque pas l'étage
-    const right = new THREE.Vector3().subVectors(tgt, pos).cross(camera.up).normalize();
-    const shift = (330 / innerWidth) * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-    pos.addScaledVector(right, shift); tgt.addScaledVector(right, shift);
-  }
-  flyTo(pos, tgt);
+  panelShift(pos, tgt, dist); flyTo(pos, tgt);
+}
+function panelShift(pos, tgt, dist) {   // décale le cadrage vers la gauche pour que le panneau de droite ne masque pas la cible
+  if (mobile) return;
+  const right = new THREE.Vector3().subVectors(tgt, pos).cross(camera.up).normalize();
+  const shift = (330 / innerWidth) * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
+  pos.addScaledVector(right, shift); tgt.addScaledVector(right, shift);
+}
+function focusLot(a, then) {             // courte animation : la vue se recentre sur le lot, puis la fiche s'ouvre
+  const tgt = a.center.clone().setY(levelsY[a.level] + 1), dir = camera.position.clone().sub(controls.target);
+  const d = mobile ? 52 : 40, az = Math.atan2(dir.x, dir.z), el = Math.max(Math.asin(THREE.MathUtils.clamp(dir.y / dir.length(), -1, 1)), THREE.MathUtils.degToRad(50));
+  const pos = new THREE.Vector3(tgt.x + Math.sin(az) * Math.cos(el) * d, tgt.y + Math.sin(el) * d, tgt.z + Math.cos(az) * Math.cos(el) * d);
+  panelShift(pos, tgt, d); flyTo(pos, tgt, 750);
+  if (then) setTimeout(then, 700);
 }
 
 /* ---------- fiche du lot ---------- */
 function selectLot(a) {
   if (!a) return showCard(null);
-  if (a.level !== level) setLevel(a.level);
-  showCard(a);
+  if (a.level !== level) setLevel(a.level, false);
+  selLot = a; paintLots();
+  focusLot(a, () => selLot === a && showCard(a));
 }
 function showCard(a) {
   selLot = a; paintLots();
@@ -750,6 +812,59 @@ function showCard(a) {
   a.row?.scrollIntoView({ block: 'nearest' });
 }
 
+/* ---------- liste de tous les lots : recherche, filtres (typologie, étage, disponibilité, surface, extérieur), tri ---------- */
+const extKind = (a) => (a.ext ? a.extName.split(' ')[0] : 'Sans');
+const F = { q: '', type: new Set(), level: new Set(), statut: new Set(), ext: new Set(), min: null, max: null, sort: 'lot', dir: 1 };
+const FACETS = {
+  type: () => [...new Set(LOTS.map((a) => a.type))].sort().map((t) => [t, t, TYPE_COL[t]]),
+  level: () => ['RDC', 'R+1', 'R+2', 'R+3'].map((l) => [l, l]),
+  statut: () => Object.entries(DISPO).map(([k, d]) => [k, d.t, d.c]),
+  ext: () => [...new Set(LOTS.map(extKind))].sort((x, y) => (x === 'Sans') - (y === 'Sans') || x.localeCompare(y)).map((e) => [e, e === 'Sans' ? 'Sans extérieur' : e]),
+};
+const val = { type: (a) => a.type, level: (a) => a.level, statut: statusOf, ext: extKind };
+function lotMatches(a, skip) {
+  for (const f of ['type', 'level', 'statut', 'ext']) if (f !== skip && F[f].size && !F[f].has(val[f](a))) return false;
+  if (F.min != null && a.hab < F.min) return false;
+  if (F.max != null && a.hab > F.max) return false;
+  if (F.q) {
+    const hay = [a.lot, a.type, a.level, LVNAME[a.level], DISPO[statusOf(a)].t, a.ext ? a.extName : 'sans extérieur', cardinal(a.az), ...a.rooms.map((r) => r.name)].join(' ').toLowerCase();
+    if (!F.q.split(/\s+/).every((w) => hay.includes(w))) return false;
+  }
+  return true;
+}
+function renderList() {
+  for (const box of document.querySelectorAll('#lFilt .chips')) {   // pastilles avec effectifs (tenant compte des autres filtres)
+    const f = box.dataset.f;
+    box.innerHTML = FACETS[f]().map(([k, t, c]) => `<button class="chip${F[f].has(k) ? ' on' : ''}" data-k="${k}">${c != null ? `<i style="background:${hexc(c)}"></i>` : ''}${t}<em>${LOTS.filter((a) => val[f](a) === k && lotMatches(a, f)).length}</em></button>`).join('');
+  }
+  const key = { lot: (a) => a.lot, level: (a) => ORDER.indexOf(a.level), type: (a) => a.type, hab: (a) => a.hab, ext: (a) => a.ext || 0, az: (a) => cardinal(a.az), statut: (a) => Object.keys(DISPO).indexOf(statusOf(a)) }[F.sort];
+  const list = LOTS.filter((a) => lotMatches(a)).sort((x, y) => (key(x) > key(y) ? 1 : key(x) < key(y) ? -1 : x.lot.localeCompare(y.lot)) * F.dir);
+  $('lCount').textContent = `${list.length} lot${list.length > 1 ? 's' : ''} sur ${LOTS.length}`;
+  $('lBody').innerHTML = list.map((a) => { const st = statusOf(a); return `<tr data-l="${a.lot}"><td><b>${a.lot}</b></td><td>${a.level}</td><td><span class="ty" style="background:${hexc(TYPE_COL[a.type] ?? 0x64748b)}">${a.type}</span></td>`
+    + `<td><b>${m2(a.hab)}</b></td><td>${a.ext ? `${a.extName} ${m2(a.ext)}` : '—'}</td><td>${cardinal(a.az)}</td><td><span class="st"><i style="background:${hexc(DISPO[st].c)}"></i>${DISPO[st].t}</span></td></tr>`; }).join('')
+    || '<tr><td colspan="7" class="none">Aucun lot ne correspond à ces critères.</td></tr>';
+  document.querySelectorAll('.ltab th').forEach((th) => th.className = th.dataset.s === F.sort ? (F.dir > 0 ? 'asc' : 'desc') : '');
+}
+{
+  const hs = LOTS.map((a) => a.hab), lo = Math.floor(Math.min(...hs)), hi = Math.ceil(Math.max(...hs));
+  Object.assign($('lMin'), { placeholder: lo, min: lo, max: hi }); Object.assign($('lMax'), { placeholder: hi, min: lo, max: hi });
+}
+const openList = () => { $('listModal').classList.add('open'); renderList(); if (!mobile) $('lQ').focus(); };
+const closeList = () => $('listModal').classList.remove('open');
+$('bList').onclick = (e) => { e.stopPropagation(); openList(); };
+$('lClose').onclick = closeList;
+$('listModal').onclick = (e) => { if (e.target.id === 'listModal') closeList(); };
+$('lQ').oninput = (e) => { F.q = e.target.value.trim().toLowerCase(); renderList(); };
+$('lMin').oninput = (e) => { F.min = e.target.value === '' ? null : +e.target.value; renderList(); };
+$('lMax').oninput = (e) => { F.max = e.target.value === '' ? null : +e.target.value; renderList(); };
+$('lFilt').addEventListener('click', (e) => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  const set = F[c.parentElement.dataset.f]; set.has(c.dataset.k) ? set.delete(c.dataset.k) : set.add(c.dataset.k); renderList();
+});
+$('lReset').onclick = () => { F.q = ''; F.min = F.max = null; ['type', 'level', 'statut', 'ext'].forEach((f) => F[f].clear()); $('lQ').value = $('lMin').value = $('lMax').value = ''; renderList(); };
+document.querySelector('.ltab thead').onclick = (e) => { const th = e.target.closest('th'); if (!th) return; F.dir = F.sort === th.dataset.s ? -F.dir : 1; F.sort = th.dataset.s; renderList(); };
+$('lBody').onclick = (e) => { const tr = e.target.closest('tr[data-l]'); if (!tr) return; closeList(); stopTour(); selectLot(lotsGeo[tr.dataset.l]); };
+
 /* ---------- plan de vente plein écran : molette / pincer pour zoomer, glisser pour déplacer ---------- */
 const PZ = { s: 1, x: 0, y: 0, fit: 1 };
 const planApply = () => ($('pimg').style.transform = `translate(${PZ.x}px,${PZ.y}px) scale(${PZ.s})`);
@@ -766,7 +881,7 @@ function planZoom(f, cx, cy) {
 $('mClose').onclick = () => showCard(null);
 $('lotModal').onclick = (e) => { if (e.target.id === 'lotModal') showCard(null); };
 $('pfit').onclick = planFit; $('pzin').onclick = () => planZoom(1.4); $('pzout').onclick = () => planZoom(1 / 1.4);
-addEventListener('keydown', (e) => { if (e.key === 'Escape') { showCard(null); $('help').classList.remove('open'); $('setPop').classList.remove('open'); } });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { if ($('listModal').classList.contains('open')) return closeList(); showCard(null); $('help').classList.remove('open'); $('setPop').classList.remove('open'); } });
 addEventListener('resize', () => $('lotModal').classList.contains('open') && planFit());
 {
   const st = $('pstage'), pts = new Map(); let last = null;
@@ -798,7 +913,7 @@ addEventListener('resize', () => $('lotModal').classList.contains('open') && pla
   cv.addEventListener('pointerdown', (e) => (down = [e.clientX, e.clientY]));
   cv.addEventListener('pointerup', (e) => {
     if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5 || level === 'all') return;
-    const a = pick(e); a ? showCard(a) : showCard(null);
+    const a = pick(e); a ? selectLot(a) : showCard(null);
   });
   cv.addEventListener('pointermove', (e) => {
     if (e.buttons || level === 'all' || performance.now() - lastMove < 40) return;
@@ -817,6 +932,7 @@ addEventListener('resize', resize); new ResizeObserver(resize).observe(document.
 controls.addEventListener('start', () => $('help').classList.remove('open'));
 $('bSet').onclick = (e) => { e.stopPropagation(); $('setPop').classList.toggle('open'); $('bSet').classList.toggle('on'); };
 addEventListener('pointerdown', (e) => { if (!$('setPop').contains(e.target) && !$('bSet').contains(e.target)) { $('setPop').classList.remove('open'); $('bSet').classList.remove('on'); } });
+$('bTour').onclick = () => document.body.classList.toggle('dockOn');
 $('bFull').onclick = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
 $('bHelp').onclick = () => $('help').classList.toggle('open');
 $('helpOk').onclick = () => { $('help').classList.remove('open'); try { localStorage.setItem('bsoHelp', '1'); } catch (e) {} };

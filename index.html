@@ -170,6 +170,16 @@
   .cmp{position:fixed;left:0;top:0;z-index:4;pointer-events:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--navy);font-weight:700;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
   .cmp.n{background:var(--red);color:#fff}
   .hlbl{position:fixed;left:0;top:0;z-index:4;pointer-events:none;font-size:11px;font-weight:700;color:#b86a00;text-shadow:0 0 3px #fff,0 0 3px #fff}
+  #mini{position:fixed;left:0;top:0;z-index:9;width:260px;overflow:hidden;display:none;opacity:0;transition:opacity .2s}
+  #mini.open{display:block} #mini.vis{opacity:1}
+  #mini .mh{display:flex;align-items:center;gap:8px;padding:10px 10px 10px 16px;color:#fff;font-weight:700;font-size:15px}
+  #mini .mh span{flex:1} #mini .mh em{font-style:normal;font-size:15px}
+  #mini .mh button{width:24px;height:24px;border-radius:7px;color:#fff;font-size:13px;line-height:1;background:rgba(0,0,0,.14)} #mini .mh button:hover{background:rgba(0,0,0,.28)}
+  #mini .mb{padding:12px 16px 14px}
+  #mini .big{font-size:25px;font-weight:700;margin-bottom:6px}
+  #mini .rw{display:flex;justify-content:space-between;gap:10px;padding:2px 0;font-size:13.5px;color:var(--mute)} #mini .rw b{color:var(--ink)}
+  #mini .rw i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+  #mini .go{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:12px;padding:9px 12px;border-radius:9px;background:var(--navy);color:#fff;font-weight:700;font-size:13px} #mini .go:hover{background:var(--blue)}
   #load{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#f3f4f5;color:var(--mute);transition:opacity .5s}
   #load div{width:220px;text-align:center} #load img{height:64px;display:block;margin:0 auto 14px;border-radius:8px}
   #load i{display:block;height:3px;margin-top:10px;border-radius:2px;background:linear-gradient(90deg,var(--red) var(--p,0%),rgba(0,0,0,.08) 0)}
@@ -235,6 +245,7 @@
 <div id="help" class="card"><span class="ic">✋</span><p><b>Glissez</b> pour tourner, <b>molette ou pincer</b> pour zoomer, <b>clic droit / deux doigts</b> pour déplacer.<br>Choisissez un <b>étage</b>, puis cliquez un <b>lot coloré</b> pour sa fiche.</p><button id="helpOk">Compris</button></div>
 <div id="credit">Bâtiments mitoyens : IFC du projet · © contributeurs OpenStreetMap · Itinéraires OSRM · Illustrations non contractuelles</div>
 <img id="shot" alt="">
+<div id="mini" class="card"><div class="mh"><span id="miT"></span><em id="miTy"></em><button id="miX" aria-label="Fermer">✕</button></div><div class="mb" id="miB"></div></div>
 <div id="lotModal"><div class="win card">
   <header><span class="ty" id="mType"></span><h2 id="mTitle"></h2><a id="pdl" download>⬇ Plan de vente (PDF)</a><button id="mClose">✕ Fermer</button></header>
   <div class="body">
@@ -760,7 +771,7 @@ function renderLegend() {
 $('mode').onclick = (e) => {
   const b = e.target.closest('button'); if (!b) return;
   colorMode = b.dataset.m; $('mode').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
-  renderLegend(); paintLots(); if (selLot) showCard(selLot);
+  renderLegend(); paintLots(); if (miniLot) showMini(miniLot);
 };
 $('uiHd').onclick = (e) => { if (mobile && !e.target.closest('#bList')) $('ui').classList.toggle('min'); };
 function setHover(a) { if (a === hoverLot) return; hoverLot = a; renderer.domElement.style.cursor = a ? 'pointer' : ''; paintLots(); }
@@ -819,11 +830,46 @@ function selectLot(a) {
   if (!a) return showCard(null);
   if (a.level !== level) setLevel(a.level, false);
   selLot = a; paintLots();
-  focusLot(a, () => selLot === a && showCard(a));
+  showMini(null, true); focusLot(a, () => selLot === a && showMini(a));
 }
+let miniLot = null;
+function showMini(a, keepSel) {     // petite fiche à côté du lot ; le bouton ouvre la fiche complète avec le plan
+  miniLot = a; $('mini').classList.toggle('open', !!a); $('mini').classList.remove('vis');
+  if (!keepSel) { selLot = a; paintLots(); }
+  if (!a) return;
+  const st = statusOf(a);
+  $('mini').querySelector('.mh').style.background = hexc(lotCol(a));
+  $('miT').textContent = `Appartement ${a.lot}`; $('miTy').textContent = a.type;
+  $('miB').innerHTML = `<div class="big">${m2(a.hab).replace('m²', 'm<sup>2</sup>')}</div>
+    <div class="rw"><span>Étage</span><b>${LVNAME[a.level]}</b></div>
+    ${a.ext ? `<div class="rw"><span>${a.extName.split(' ')[0]}</span><b>${m2(a.ext)}</b></div>` : ''}
+    <div class="rw"><span>Orientation</span><b>${cardinal(a.az)}</b></div>
+    <div class="rw"><span>Disponibilité</span><b><i style="background:${hexc(DISPO[st].c)}"></i>${DISPO[st].t}</b></div>
+    <button class="go" id="miGo">Fiche complète et plan →</button>`;
+  $('miGo').onclick = () => showCard(a);
+  placeMini(); a.row?.scrollIntoView({ block: 'nearest' }); dirty = Math.max(dirty, 2);
+}
+function placeMini() {
+  const a = miniLot; if (!a) return;
+  const el = $('mini'), w = el.offsetWidth, h = el.offsetHeight;
+  v3.copy(a.center).project(camera);
+  if (v3.z > 1 || Math.abs(v3.x) > 1 || Math.abs(v3.y) > 1) { el.classList.remove('vis'); return; }
+  const x = (v3.x * 0.5 + 0.5) * innerWidth, y = (-v3.y * 0.5 + 0.5) * innerHeight;
+  const ui = $('ui').getBoundingClientRect(), small = innerWidth <= 760;
+  const xMax = (small ? innerWidth : ui.left) - 10, yMax = (small && ui.top > innerHeight / 2 ? ui.top : innerHeight) - 10, yMin = small ? 70 : 10;
+  let left, top;
+  if (small) {                                   // téléphone : au-dessus du lot, sinon en dessous
+    left = x - w / 2; top = y - 30 - h; if (top < yMin) top = y + 30;
+  } else {                                       // à droite du lot, sinon à gauche
+    left = x + 34; if (left + w > xMax) left = x - 34 - w; top = y - h / 2;
+  }
+  left = Math.max(10, Math.min(left, xMax - w)); top = Math.max(yMin, Math.min(top, yMax - h));
+  el.style.transform = `translate(${Math.round(left)}px,${Math.round(top)}px)`; el.classList.add('vis');
+}
+$('miX').onclick = () => showCard(null);
 function showCard(a) {
+  if (!a) { $('lotModal').classList.remove('open'); showMini(null); return; }
   selLot = a; paintLots();
-  if (!a) { $('lotModal').classList.remove('open'); return; }
   const st = statusOf(a), isExt = (r) => /^(Loggia|Balcon|Terrasse|Jardin)/i.test(r.name);
   const rows = (list) => list.map((r) => `<tr><td>${r.name}</td><td>${m2(r.area)}</td></tr>`).join('');
   $('mType').textContent = a.type; $('mType').style.background = hexc(TYPE_COL[a.type] ?? 0x64748b);
@@ -906,10 +952,11 @@ function planZoom(f, cx, cy) {
   const ns = Math.min(PZ.fit * 10, Math.max(PZ.fit * 0.8, PZ.s * f));
   PZ.x = cx - (cx - PZ.x) * (ns / PZ.s); PZ.y = cy - (cy - PZ.y) * (ns / PZ.s); PZ.s = ns; planApply();
 }
-$('mClose').onclick = () => showCard(null);
-$('lotModal').onclick = (e) => { if (e.target.id === 'lotModal') showCard(null); };
+const closeModal = () => $('lotModal').classList.remove('open');   // retour à la petite fiche
+$('mClose').onclick = closeModal;
+$('lotModal').onclick = (e) => { if (e.target.id === 'lotModal') closeModal(); };
 $('pfit').onclick = planFit; $('pzin').onclick = () => planZoom(1.4); $('pzout').onclick = () => planZoom(1 / 1.4);
-addEventListener('keydown', (e) => { if (e.key === 'Escape') { if ($('listModal').classList.contains('open')) return closeList(); showCard(null); $('help').classList.remove('open'); $('setPop').classList.remove('open'); } });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { if ($('listModal').classList.contains('open')) return closeList(); if ($('lotModal').classList.contains('open')) return closeModal(); showCard(null); $('help').classList.remove('open'); $('setPop').classList.remove('open'); } });
 addEventListener('resize', () => $('lotModal').classList.contains('open') && planFit());
 {
   const st = $('pstage'), pts = new Map(); let last = null;
@@ -1252,7 +1299,7 @@ renderer.setAnimationLoop(() => {
   if (Math.abs(near - camera.near) > camera.near * 0.2) { camera.near = near; camera.updateProjectionMatrix(); }
   if (shadowDirty) { renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
   dome.position.copy(camera.position);
-  renderer.render(scene, camera); if ($('streets').checked) updateOcclusion(); placeLabels(); placeLots(); if (sunViz.visible) placeSunLabels();
+  renderer.render(scene, camera); if ($('streets').checked) updateOcclusion(); placeLabels(); placeLots(); placeMini(); if (sunViz.visible) placeSunLabels();
 });
 window.__v2 = { setLevel, selectLot, camera, controls, ctr, R, scene, redraw: () => (dirty = 3), setHome: (p, t) => { camera.position.set(...p); controls.target.set(...t); dirty = 3; } };   // réglage du cadrage (débogage)
 $('load').style.opacity = 0; setTimeout(() => $('load').remove(), 500);

@@ -1007,8 +1007,9 @@ const warm = new THREE.Color(0xffa860);
 function applySun(dir, el) {
   sunDir.copy(dir);
   const k = THREE.MathUtils.smoothstep(el, 0, 20);
-  sun.intensity = 1.0 + 2.4 * k; sun.color.copy(warm).lerp(DEF.col, THREE.MathUtils.smoothstep(el, 2, 25));   // ombres plus contrastées qu'en vue « maquette »
-  hemi.intensity = 0.32 + 0.12 * k; scene.environmentIntensity = 0.22 + 0.04 * k;
+  sun.intensity = (1.0 + 2.4 * k) * st.sunK; sun.color.copy(warm).lerp(DEF.col, THREE.MathUtils.smoothstep(el, 2, 25));   // ombres plus contrastées qu'en vue « maquette »
+  hemi.intensity = (0.32 + 0.12 * k) * st.hemiK; scene.environmentIntensity = (0.22 + 0.04 * k) * st.envK;
+  glowU.value = st.glowSun * (1 - THREE.MathUtils.smoothstep(el, -1, 7));   // fenêtres allumées au crépuscule (style soirée)
   sun.position.copy(ctr).addScaledVector(sunDir, 250); sun.target.position.copy(ctr); sun.target.updateMatrixWorld();
   clearTimeout(envTimer); envTimer = setTimeout(buildEnv, 250);
   shadowDirty = true; dirty = 3;
@@ -1105,15 +1106,12 @@ function updateSun() {
 function sunMode(on) {
   SUN.on = on; sunViz.visible = on;
   document.body.classList.toggle('sunOn', on); $('bSun').classList.toggle('on', on);
-  scene.fog.far = on ? 900 : 700;
+  applyStyle();
   if (on) {
     stopTour();
     if (!SUN.info) { const n = parisNow(); setDay(n.D, 'now', n.min); }
     else updateSun();
     if (level === 'all') flyTo(ctr.clone().add(HOME.off.clone().multiplyScalar(innerWidth / innerHeight < 0.8 ? 2.2 : 1.3)), HOME.tgt.clone().setY(GY + 12));
-  } else {
-    sun.color.copy(DEF.col); sun.intensity = DEF.I; hemi.intensity = DEF.H;
-    sunDir.copy(DEF.dir); sun.position.copy(ctr).addScaledVector(sunDir, 250); scene.environmentIntensity = 0.35; buildEnv(); shadowDirty = true;
   }
   placeSunLabels(); dirty = 3;
 }
@@ -1127,6 +1125,111 @@ $('sunDates').onclick = (e) => {
 };
 $('sunDate').onchange = (e) => { const [y, m, d] = e.target.value.split('-').map(Number); if (y) setDay({ y, m: m - 1, d }, 'cal'); };
 window.__sun = { solar, toUTC, dayInfo, parisOffset };   // contrôle (débogage)
+
+/* ---------- styles graphiques de la maquette et de l'environnement (menu Affichage, ou ?style=archi|illus|nuit dans l'adresse) ---------- */
+const BASE = {      // style d'origine « clay » : valeurs de référence, les autres styles n'indiquent que leurs différences
+  name: 'Clay (actuel)', exp: 0.72, hor: 0xf3f4f5, top: 0xa9c3e0, fog: [160, 700], hemi: [0xeef2f8, 0xbdb8ae, 0.6], sun: [0xffe2bf, 2.5],
+  azel: [SUN_AZ, SUN_EL], env: 0.35, shadow: 1, ground: 0xf6f6f3, ctx: 0xf8f7f4,
+  lay: { parking: 0xc9ccd0, chaussee: 0xa7acb3, trottoir: 0xdcd9d3, passages: 0xffffff },
+  mat: null, glass: [0x6f93a8, 0.4], ramp: 0x6e737a, veg: [0x8a7a66, 0x8fb470], cap: 0x2b3038,
+  edges: null, glow: 0, glowSun: 0, sunK: 1, hemiK: 1, envK: 1, sunDay: null,
+};
+const STYLES = {
+  clay: {},
+  archi: {   // maquette d'architecte : projet en carton blanc, contexte en balsa, socle en bois clair, arbres en mousse
+    name: 'Maquette d\'architecte', exp: 0.8, hor: 0xf1eee8, top: 0xd5dae0, fog: [200, 780], hemi: [0xf4f1ec, 0xcbbfa8, 0.85], sun: [0xfff3e2, 2.2],
+    azel: [235, 38], env: 0.3, shadow: 0.7, ground: 0xe4d9c3, ctx: 0xd9be94,
+    lay: { parking: 0xdacfb8, chaussee: 0xcdbfa2, trottoir: 0xe1d6c0, passages: 0xf3ecdf },
+    mat: (b) => ({ menuiserie: 0xb9b6b0, metal: 0xb9b6b0, zinc: 0xdcdad5, terre: 0xc8cfac, bois: 0xcaa77a }[b] ?? 0xf7f5f0),
+    glass: [0xd3dde2, 0.35], ramp: 0xbdb6aa, veg: [0xc4a97f, 0xf4f1ea], cap: 0x3a3530,
+    edges: { proj: [0x5f5a52, 0.3], ctx: [0x7a5f3c, 0.35] }, sunK: 0.9, hemiK: 1.3,
+  },
+  illus: {   // illustration : aplats de couleurs franches, lumière douce, traits bleu nuit
+    name: 'Illustration', exp: 0.8, hor: 0xf6f1e7, top: 0xb4d4ec, fog: [220, 850], hemi: [0xffffff, 0xe6dcc6, 1.3], sun: [0xfff1dc, 1.5],
+    azel: [225, 45], env: 0.12, shadow: 0.4, ground: 0xf3ecdc, ctx: 0xffffff,
+    lay: { parking: 0xe6dfd2, chaussee: 0xd6d2cb, trottoir: 0xede6d7, passages: 0xffffff },
+    mat: (b) => ({ enduit_clair: 0xfaf1df, enduit_gris: 0xb6c1cc, beton: 0xdad7d0, platre: 0xfbfaf6, pierre: 0xe4cfab, terre: 0xaedb86,
+      dalle: 0xe8e1d4, zinc: 0x8c99a8, gravier: 0xe3dfd7, menuiserie: 0x2e3b4a, bois: 0xd39a5f, metal: 0x56626e, asphalte: 0xc4c6c9 }[b] ?? 0xd8d8d8),
+    glass: [0x86c3ea, 0.8], ramp: 0x8b9099, veg: [0x9b7b5c, 0x95cf6e], cap: 0x00162e,
+    edges: { proj: [0x00162e, 0.75], ctx: [0x00162e, 0.5] }, sunK: 0.7, hemiK: 1.6, envK: 0.5,
+  },
+  nuit: {    // soirée : heure bleue, soleil couché au nord-ouest, fenêtres allumées
+    name: 'Soirée', exp: 1.05, hor: 0x46557a, top: 0x0b1530, fog: [140, 650], hemi: [0x8a9fd6, 0x232a3c, 0.95], sun: [0xffa070, 0.35],
+    azel: [298, 7], env: 0.12, shadow: 0.55, ground: 0x5a6378, ctx: 0xa6afc2,
+    lay: { parking: 0x4e576b, chaussee: 0x3c4458, trottoir: 0x646d83, passages: 0x9ba3b8 },
+    glass: [0x26354d, 0.94], ramp: 0x3d424a, veg: [0x4a4038, 0x4d6b55], cap: 0x161a22, glow: 1, glowSun: 1,
+    sunDay: { exp: 0.72, hor: 0xf3f4f5, top: 0xa9c3e0, fog: [160, 700], hemi: [0xeef2f8, 0xbdb8ae, 0.6] },   // en mode ensoleillement : ciel de jour
+  },
+};
+let st = BASE, styleKey = 'clay';
+const glowU = { value: 0 };
+const glassMat = mats.get('verre');
+if (glassMat) {   // vitrages : éclairage intérieur procédural (une fenêtre sur deux environ allumée, intensités variées)
+  glassMat.onBeforeCompile = (sh) => {
+    sh.uniforms.uGlow = glowU;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform float uGlow;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        vec3 cell = floor(vec3(vWP.x / 1.4, vWP.y / 2.85, vWP.z / 1.4));
+        float hh = fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+        totalEmissiveRadiance += vec3(1.0, 0.7, 0.4) * uGlow * (hh > 0.42 ? 2.4 + 1.8 * fract(hh * 7.31) : 0.08);`);
+  };
+  glassMat.customProgramCacheKey = () => 'glow'; glassMat.needsUpdate = true;
+}
+const layerMeshes = [];
+world.scene.traverse((o) => o.isMesh && BASE.lay[o.name] != null && layerMeshes.push(o));
+const ctxMeshes = [];
+world.scene.traverse((o) => o.isMesh && (o.name === 'bati' || o.name === 'mitoyens') && ctxMeshes.push(o));
+Object.assign(clayMat, { polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });   // les traits passent devant les faces
+let edges = null;
+function buildEdges() {      // traits des arêtes (calculés une seule fois, au premier style qui en a besoin)
+  edges = { proj: clip(new THREE.LineBasicMaterial({ transparent: true, depthWrite: false })), ctx: new THREE.LineBasicMaterial({ transparent: true, depthWrite: false }), list: [] };
+  const add = (o, m) => { const l = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 28), m); l.renderOrder = 1; o.add(l); edges.list.push(l); };
+  const proj = []; bat.scene.traverse((o) => o.isMesh && o.material !== glassMat && proj.push(o));
+  proj.forEach((o) => add(o, edges.proj)); ctxMeshes.forEach((o) => add(o, edges.ctx));
+}
+function applyStyle(k) {
+  if (k !== undefined) { styleKey = k in STYLES ? k : 'clay'; try { localStorage.setItem('bsoStyle', styleKey); } catch (e) {} }
+  st = { ...BASE, ...STYLES[styleKey] };
+  const a = SUN.on && st.sunDay ? { ...st, ...st.sunDay } : st;   // ciel et ambiance
+  renderer.toneMappingExposure = a.exp;
+  HORIZON.set(a.hor); ZENITH.set(a.top); scene.fog.color.set(a.hor);
+  scene.fog.near = a.fog[0]; scene.fog.far = a.fog[1] * (SUN.on ? 1.3 : 1);
+  hemi.color.set(a.hemi[0]); hemi.groundColor.set(a.hemi[1]);
+  sun.shadow.intensity = st.shadow;
+  ground.material.color.set(st.ground); clayMat.color.set(st.ctx);
+  for (const o of layerMeshes) o.material.color.set(st.lay[o.name]);
+  for (const [n, m] of mats) { if (m === glassMat) continue; const b = n.replace('@top', ''), c = (LIB[b] ?? LIB.divers).c; m.color.set(st.mat ? st.mat(b, c) : c); }
+  if (glassMat) { glassMat.color.set(st.glass[0]); glassMat.opacity = st.glass[1]; }
+  rampMat.color.set(st.ramp);
+  vegetation.children[0]?.material.color.set(st.veg[0]); vegetation.children[1]?.material.color.set(st.veg[1]);
+  for (const m of Object.values(capMeshes)) m.material.color.set(st.cap);
+  if (st.edges && !edges) buildEdges();
+  if (edges) {
+    edges.list.forEach((l) => (l.visible = !!st.edges));
+    if (st.edges) { edges.proj.color.set(st.edges.proj[0]); edges.proj.opacity = st.edges.proj[1]; edges.ctx.color.set(st.edges.ctx[0]); edges.ctx.opacity = st.edges.ctx[1]; }
+  }
+  if (SUN.on) { if (SUN.info) updateSun(); }
+  else {     // lumière fixe propre au style
+    const az = THREE.MathUtils.degToRad(st.azel[0]), el = THREE.MathUtils.degToRad(st.azel[1]);
+    DEF.dir.set(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)); sunDir.copy(DEF.dir);
+    DEF.col.set(st.sun[0]); sun.color.copy(DEF.col); sun.intensity = st.sun[1]; hemi.intensity = st.hemi[2]; scene.environmentIntensity = st.env;
+    sun.position.copy(ctr).addScaledVector(sunDir, 250); glowU.value = st.glow; buildEnv();
+  }
+  if ($('styleSel')) $('styleSel').value = styleKey;
+  shadowDirty = true; dirty = 3;
+}
+{
+  const sel = document.createElement('select'); sel.id = 'styleSel';
+  sel.innerHTML = Object.entries(STYLES).map(([k, s]) => `<option value="${k}">${s.name ?? BASE.name}</option>`).join('');
+  sel.style.cssText = 'font:inherit;color:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:#fff;max-width:130px';
+  const row = document.createElement('label'); row.className = 'tg'; row.append('Style 3D', sel);
+  $('setPop').prepend(row); sel.onchange = () => applyStyle(sel.value);
+  let k = new URLSearchParams(location.search).get('style');
+  if (!k) try { k = localStorage.getItem('bsoStyle'); } catch (e) {}
+  applyStyle(k ?? 'clay');
+}
 
 /* ---------- boucle : rendu seulement si quelque chose bouge ---------- */
 function resize() {
